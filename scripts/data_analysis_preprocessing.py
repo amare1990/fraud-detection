@@ -125,6 +125,16 @@ class FraudDataProcessor:
         self.data['purchase_time'] = pd.to_datetime(self.data['purchase_time'])
         print("Data types corrected.")
 
+    def univariate_analysis(self):
+        """Perform univariate analysis on numerical columns."""
+        numerical_columns = self.retrieve_numerical_columns()
+        for col in numerical_columns:
+            plt.figure(figsize=(10, 6))
+            sns.histplot(self.data[col], kde=True)
+            plt.title(f"Univariate Analysis - {col}")
+            plt.savefig(f'../notebooks/plots/univariante/hist_{col}.png', dpi=300, bbox_inches='tight')
+            plt.show()
+
     def feature_engineering(self):
         """Create new features like hours_of_day, hours_of_week and calculate transaction frequency and time-based features."""
         self.data['hour_of_day'] = self.data['purchase_time'].dt.hour
