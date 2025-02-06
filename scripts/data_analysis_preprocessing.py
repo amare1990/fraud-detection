@@ -34,9 +34,25 @@ class FraudDataProcessor:
         print(self.data.describe(include=[object, 'category']))
         print("\n")
 
+    def retrieve_numerical_columns(self):
+        """Return a list of numerical columns."""
+        return self.data.select_dtypes(include=[np.number]).columns.tolist()
+
     def identify_missing_values(self):
         """Identify missing values in the dataset."""
         print("Missing Values:")
         missing_values = self.data.isnull().sum()
         print(missing_values[missing_values > 0])
         print("\n")
+
+    def outlier_detection(self):
+        """Use box plots to identify outliers in numerical features."""
+        print("Outlier Detection:")
+        numerical_columns = self.retrieve_numerical_columns()
+        for column in numerical_columns:
+            plt.figure(figsize=(6, 4))
+            sns.boxplot(x=self.data[column])
+            plt.title(f"Boxplot of {column}")
+            plt.xlabel(column)
+            plt.savefig(f'../notebooks/plots/{column}_.png', dpi=300, bbox_inches='tight')
+            plt.show()
