@@ -24,3 +24,12 @@ class FraudDataProcessor:
         print(self.data.dtypes)
         print("\nFirst 5 Rows:")
         print(self.data.head())
+
+    def summary_statistics(self):
+        """Display summary statistics for numerical and categorical features."""
+        print("Summary Statistics for numerical features:")
+        print(self.data.describe())
+        print("\n\n")
+        print("Summary Statistics for categorical features:")
+        print(self.data.describe(include=[object, 'category']))
+        print("\n")
