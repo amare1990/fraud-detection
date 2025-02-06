@@ -126,9 +126,17 @@ class FraudDataProcessor:
         print("Data types corrected.")
 
     def feature_engineering(self):
-        """Create new features like transaction frequency and time-based features."""
+        """Create new features like hours_of_day, hours_of_week and calculate transaction frequency and time-based features."""
         self.data['hour_of_day'] = self.data['purchase_time'].dt.hour
         self.data['day_of_week'] = self.data['purchase_time'].dt.dayofweek
+
+        # Transaction Frequency: Count the number of transactions per user within a 24-hour period.
+        self.data['transaction_frequency'] = self.data.groupby('user_id')['purchase_time'].transform(
+        lambda x: x.diff().dt.total_seconds().le(86400).cumsum())
+
+        # Transaction Velocity: Calculate the total amount spent by each user in the last 24 hours.
+        self.data['transaction_velocity'] = self.data.groupby('user_id')['purchase_value'].transform(
+        lambda x: x.rolling('1D', on='purchase_time').sum())
         print("Feature engineering completed.")
 
     def normalize_and_scale(self):
