@@ -117,3 +117,9 @@ class FraudDataProcessor:
         """Remove duplicate rows from the dataset."""
         self.data.drop_duplicates(inplace=True)
         print("Duplicates removed.")
+
+    def correct_data_types(self):
+        """Convert columns to appropriate data types."""
+        self.data['signup_time'] = pd.to_datetime(self.data['signup_time'])
+        self.data['purchase_time'] = pd.to_datetime(self.data['purchase_time'])
+        print("Data types corrected.")
