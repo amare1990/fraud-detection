@@ -123,3 +123,9 @@ class FraudDataProcessor:
         self.data['signup_time'] = pd.to_datetime(self.data['signup_time'])
         self.data['purchase_time'] = pd.to_datetime(self.data['purchase_time'])
         print("Data types corrected.")
+
+    def feature_engineering(self):
+        """Create new features like transaction frequency and time-based features."""
+        self.data['hour_of_day'] = self.data['purchase_time'].dt.hour
+        self.data['day_of_week'] = self.data['purchase_time'].dt.dayofweek
+        print("Feature engineering completed.")
