@@ -158,15 +158,16 @@ class FraudDataProcessor:
         """Perform bivariate analysis (correlation, pair plots and box plot)."""
         # Correlation Heatmap
         print("Correlation Heatmap:")
+        numerical_columns = self.data[self.retrieve_numerical_columns()]  # Convert list to DataFrame
         plt.figure(figsize=(12, 8))
-        corr_matrix = self.data.corr()
+        corr_matrix = numerical_columns.corr()
         sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f")
         plt.title("Correlation Heatmap")
         plt.savefig('notebooks/plots/heatmap.png', dpi=300, bbox_inches='tight')
         plt.show()
 
         # Pair Plot (only a subset of columns for better visualization)
-        print("Bivariate Analysis - Pair Plot:")
+        print("Bivariate Analysis - Pair Plot: Starting")
         numerical_columns = self.retrieve_numerical_columns()
         subset = numerical_columns[:5]  # Adjust number of columns to display in pair plot
         sns.pairplot(self.data[subset], diag_kind='kde', plot_kws={'alpha': 0.5})
