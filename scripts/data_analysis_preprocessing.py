@@ -176,6 +176,29 @@ class FraudDataProcessor:
                 plt.savefig(f'notebooks/plots/bivariante/boxplot_{col}.png', dpi=300, bbox_inches='tight')
                 plt.show()
 
+    # Bivariante analysis between categorical variables
+    def bivariate_categorical_analysis(self):
+        """Perform bivariate analysis between two categorical columns."""
+        # Create a contingency table (cross-tabulation)
+        contingency_table = pd.crosstab(self.data['browser'], self.data['source'])
+        print("Contingency Table (browser vs source):")
+        print(contingency_table)
+
+        # Visualize the relationship using a stacked bar chart (countplot)
+        plt.figure(figsize=(10, 6))
+        sns.countplot(x='browser', hue='source', data=self.data)
+        plt.title("Bivariate Analysis - browser vs source")
+        plt.savefig(f'notebooks/plots/bivariante/categ_stacked_bar_chart.png', dpi=300, bbox_inches='tight')
+        plt.show()
+
+        # Optional: Chi-square test of independence
+        from scipy.stats import chi2_contingency
+        chi2, p, dof, expected = chi2_contingency(contingency_table)
+        print(f"Chi-Square Test p-value: {p}")
+        if p < 0.05:
+            print("The variables are likely dependent.")
+        else:
+            print("The variables are likely independent.")
 
 
     def feature_engineering(self):
