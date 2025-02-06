@@ -33,3 +33,10 @@ class FraudDataProcessor:
         print("Summary Statistics for categorical features:")
         print(self.data.describe(include=[object, 'category']))
         print("\n")
+
+    def identify_missing_values(self):
+        """Identify missing values in the dataset."""
+        print("Missing Values:")
+        missing_values = self.data.isnull().sum()
+        print(missing_values[missing_values > 0])
+        print("\n")
