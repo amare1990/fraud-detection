@@ -132,7 +132,20 @@ class FraudDataProcessor:
             plt.figure(figsize=(10, 6))
             sns.histplot(self.data[col], kde=True)
             plt.title(f"Univariate Analysis - {col}")
+            plt.xlabel(col)  # X-label for numerical data
+            plt.ylabel("Frequency")  # Y-label indicating frequency
             plt.savefig(f'../notebooks/plots/univariante/hist_{col}.png', dpi=300, bbox_inches='tight')
+            plt.show()
+
+        """Perform univariante analysis on categorical columns."""
+        categorical_columns = self.data.select_dtypes(include=['object', 'category']).columns.tolist()
+        for col in categorical_columns:
+            plt.figure(figsize=(10,6))
+            sns.countplot(x=self.data[col])
+            plt.title(f"Univariante Analysis - {col}")
+            plt.xlabel(col)  # X-label indicating the categorical variable
+            plt.ylabel("Count")  # Y-label indicating the count of occurrences
+            plt.savefig(f'../notebooks/plots/univariante/countplot_{col}.png', dpi=300, bbox_inches='tight')
             plt.show()
 
     def feature_engineering(self):
@@ -159,7 +172,7 @@ class FraudDataProcessor:
     def encode_categorical_features(self, method ='onehot'):
         """Encode categorical features using Label Encoding."""
         label_encoder = LabelEncoder()
-        categorical_columns = self.data.select_dtypes(include=['object']).columns.tolist()
+        categorical_columns = self.data.select_dtypes(include=['object', 'category']).columns.tolist()
 
         if method == 'onehot':
 
