@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
 
 
 class FraudDataProcessor:
@@ -129,3 +130,10 @@ class FraudDataProcessor:
         self.data['hour_of_day'] = self.data['purchase_time'].dt.hour
         self.data['day_of_week'] = self.data['purchase_time'].dt.dayofweek
         print("Feature engineering completed.")
+
+    def normalize_and_scale(self):
+        """Normalize and scale numerical features."""
+        scaler = StandardScaler()
+        numerical_columns = self.retrieve_numerical_columns()
+        self.data[numerical_columns] = scaler.fit_transform(self.data[numerical_columns])
+        print("Normalization and scaling done.")
