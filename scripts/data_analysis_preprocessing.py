@@ -16,7 +16,7 @@ class FraudDataProcessor:
         Initialize the class with the dataset.
         :param data: Pandas DataFrame
         """
-        self.data = data_path
+        self.data = pd.read_csv(data_path)
 
     def overview_of_data(self):
         """Provide an overview of the dataset."""
@@ -57,7 +57,7 @@ class FraudDataProcessor:
             sns.boxplot(x=self.data[column])
             plt.title(f"Boxplot of {column}")
             plt.xlabel(column)
-            plt.savefig(f'../notebooks/plots/{column}_.png', dpi=300, bbox_inches='tight')
+            plt.savefig(f'../notebooks/plots/outlier_{column}.png', dpi=300, bbox_inches='tight')
             plt.show()
 
     def handle_missing_values(self, strategy="mean", threshold=1.5):
@@ -244,6 +244,11 @@ class FraudDataProcessor:
               self.data[col] = label_encoder.fit_transform(self.data[col])
         print(f"Categorical encoding using {method} completed.")
 
+    def save_processed_data(self, output_path='../data/processed_data.csv'):
+        """Save the processed data to a CSV file."""
+        self.data.to_csv(output_path, index=False)
+        print(f"Processed data saved to {output_path}")
+
     def analysis_preprocess(self):
         """Run all instance methods."""
         self.overview_of_data()
@@ -260,4 +265,4 @@ class FraudDataProcessor:
         self.feature_engineering()
         self.normalize_and_scale()
         self.encode_categorical_features()
-
+        self.save_processed_data()
