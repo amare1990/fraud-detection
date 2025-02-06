@@ -244,5 +244,20 @@ class FraudDataProcessor:
               self.data[col] = label_encoder.fit_transform(self.data[col])
         print(f"Categorical encoding using {method} completed.")
 
-
+    def analysis_preprocess(self):
+        """Run all instance methods."""
+        self.overview_of_data()
+        self.summary_statistics()
+        self.retrieve_numerical_columns()
+        self.identify_missing_values()
+        self.outlier_detection()
+        self.handle_missing_values()
+        self.remove_duplicates()
+        self.correct_data_types()
+        self.univariate_analysis()
+        self.bivariate_analysis()
+        self.bivariate_categorical_analysis()
+        self.feature_engineering()
+        self.normalize_and_scale()
+        self.encode_categorical_features()
 
