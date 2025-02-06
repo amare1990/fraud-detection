@@ -3,11 +3,15 @@ Data Analysis and Preprocessing
 """
 import numpy as np
 import pandas as pd
+import ipaddress
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
+
+from scipy.stats import chi2_contingency
 
 
 class FraudDataProcessor:
@@ -199,13 +203,35 @@ class FraudDataProcessor:
         plt.show()
 
         # Optional: Chi-square test of independence
-        from scipy.stats import chi2_contingency
         chi2, p, dof, expected = chi2_contingency(contingency_table)
         print(f"Chi-Square Test p-value: {p}")
         if p < 0.05:
             print("The variables are likely dependent.")
         else:
             print("The variables are likely independent.")
+
+    def ip_to_integer(self, ip):
+        """Convert IP address to an integer."""
+        return int(ipaddress.ip_address(ip))
+
+    def merge_datasets_for_geolocation(self):
+        """Merge Fraud_Data.csv with IpAddress_to_Country.csv for geolocation analysis."""
+        # Convert IP addresses to integer format in both datasets
+        self.data['ip_int'] = self.data['ip_address'].apply(self.ip_to_integer)
+
+        ip_to_country = pd.read_csv('IpAddress_to_Country.csv')
+        ip_to_country['lower_bound_ip_int'] = ip_to_country['lower_bound_ip_address'].apply(self.ip_to_integer)
+        ip_to_country['upper_bound_ip_int'] = ip_to_country['upper_bound_ip_address'].apply(self.ip_to_integer)
+
+        # Merge datasets
+        self.data = pd.merge(self.data, ip_to_country[['lower_bound_ip_int', 'upper_bound_ip_int', 'country']],
+                             left_on='ip_int', right_on='lower_bound_ip_int', how='left')
+
+        # Optional: You may need to filter the rows based on the IP range
+        self.data = self.data[(self.data['ip_int'] >= self.data['lower_bound_ip_int']) &
+                              (self.data['ip_int'] <= self.data['upper_bound_ip_int'])]
+
+        print("Datasets merged for geolocation analysis.")
 
 
     def feature_engineering(self):
@@ -273,6 +299,7 @@ class FraudDataProcessor:
         self.univariate_analysis()
         self.bivariate_analysis()
         self.bivariate_categorical_analysis()
+        self.merge_datasets_for_geolocation()
         self.feature_engineering()
         self.normalize_and_scale()
         self.encode_categorical_features()
