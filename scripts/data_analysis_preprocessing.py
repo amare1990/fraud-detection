@@ -127,6 +127,7 @@ class FraudDataProcessor:
 
     def univariate_analysis(self):
         """Perform univariate analysis on numerical columns."""
+        print("Univariate Analysis starting: numerical columns")
         numerical_columns = self.retrieve_numerical_columns()
         for col in numerical_columns:
             plt.figure(figsize=(10, 6))
@@ -138,6 +139,7 @@ class FraudDataProcessor:
             plt.show()
 
         """Perform univariante analysis on categorical columns."""
+        print("Univariate Analysis starting: categorical columns")
         categorical_columns = self.data.select_dtypes(include=['object', 'category']).columns.tolist()
         for col in categorical_columns:
             plt.figure(figsize=(10,6))
@@ -151,6 +153,7 @@ class FraudDataProcessor:
     def bivariate_analysis(self):
         """Perform bivariate analysis (correlation, pair plots and box plot)."""
         # Correlation Heatmap
+        print("Correlation Heatmap:")
         plt.figure(figsize=(12, 8))
         corr_matrix = self.data.corr()
         sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f")
@@ -159,6 +162,7 @@ class FraudDataProcessor:
         plt.show()
 
         # Pair Plot (only a subset of columns for better visualization)
+        print("Bivariate Analysis - Pair Plot:")
         numerical_columns = self.retrieve_numerical_columns()
         subset = numerical_columns[:5]  # Adjust number of columns to display in pair plot
         sns.pairplot(self.data[subset], diag_kind='kde', plot_kws={'alpha': 0.5})
@@ -167,6 +171,7 @@ class FraudDataProcessor:
         plt.show()
 
         # Bivariate analysis on categorical vs numerical (Boxplot example)
+        print("Bivariate Analysis - Boxplot:")
         categorical_columns = self.data.select_dtypes(include=['object', 'category']).columns.tolist()
         for col in categorical_columns:
             if col != 'class':  # Avoid 'class' as target variable
@@ -179,12 +184,14 @@ class FraudDataProcessor:
     # Bivariante analysis between categorical variables
     def bivariate_categorical_analysis(self):
         """Perform bivariate analysis between two categorical columns."""
+        print("Bivariate Analysis: contigency table - browser vs source: starting")
         # Create a contingency table (cross-tabulation)
         contingency_table = pd.crosstab(self.data['browser'], self.data['source'])
         print("Contingency Table (browser vs source):")
         print(contingency_table)
 
         # Visualize the relationship using a stacked bar chart (countplot)
+        print("Bivariate Analysis - browser vs source: countplot plotting")
         plt.figure(figsize=(10, 6))
         sns.countplot(x='browser', hue='source', data=self.data)
         plt.title("Bivariate Analysis - browser vs source")
@@ -203,6 +210,8 @@ class FraudDataProcessor:
 
     def feature_engineering(self):
         """Create new features like hours_of_day, hours_of_week and calculate transaction frequency and time-based features."""
+        print("Feature engineering starting...")
+
         self.data['hour_of_day'] = self.data['purchase_time'].dt.hour
         self.data['day_of_week'] = self.data['purchase_time'].dt.dayofweek
 
@@ -217,6 +226,7 @@ class FraudDataProcessor:
 
     def normalize_and_scale(self):
         """Normalize and scale numerical features."""
+        print("Normalizing and scaling numerical features... starting")
         scaler = StandardScaler()
         numerical_columns = self.retrieve_numerical_columns()
         self.data[numerical_columns] = scaler.fit_transform(self.data[numerical_columns])
@@ -224,6 +234,7 @@ class FraudDataProcessor:
 
     def encode_categorical_features(self, method ='onehot'):
         """Encode categorical features using Label Encoding."""
+        print("Encoding categorical features... starting")
         label_encoder = LabelEncoder()
         categorical_columns = self.data.select_dtypes(include=['object', 'category']).columns.tolist()
 
