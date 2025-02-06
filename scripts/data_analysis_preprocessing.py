@@ -61,3 +61,8 @@ class FraudDataProcessor:
         """Handle missing values by imputing or dropping them."""
         self.data.fillna(self.data.median(), inplace=True)
         print("Missing values handled.")
+
+    def remove_duplicates(self):
+        """Remove duplicate rows from the dataset."""
+        self.data.drop_duplicates(inplace=True)
+        print("Duplicates removed.")
