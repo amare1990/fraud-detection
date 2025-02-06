@@ -148,6 +148,36 @@ class FraudDataProcessor:
             plt.savefig(f'../notebooks/plots/univariante/countplot_{col}.png', dpi=300, bbox_inches='tight')
             plt.show()
 
+    def bivariate_analysis(self):
+        """Perform bivariate analysis (correlation, pair plots and box plot)."""
+        # Correlation Heatmap
+        plt.figure(figsize=(12, 8))
+        corr_matrix = self.data.corr()
+        sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+        plt.title("Correlation Heatmap")
+        plt.savefig('notebooks/plots/heatmap.png', dpi=300, bbox_inches='tight')
+        plt.show()
+
+        # Pair Plot (only a subset of columns for better visualization)
+        numerical_columns = self.retrieve_numerical_columns()
+        subset = numerical_columns[:5]  # Adjust number of columns to display in pair plot
+        sns.pairplot(self.data[subset], diag_kind='kde', plot_kws={'alpha': 0.5})
+        plt.title("Bivariate Analysis - Pair Plot")
+        plt.savefig('notebooks/plots/bivariante/paiplot.png', dpi=300, bbox_inches='tight')
+        plt.show()
+
+        # Bivariate analysis on categorical vs numerical (Boxplot example)
+        categorical_columns = self.data.select_dtypes(include=['object', 'category']).columns.tolist()
+        for col in categorical_columns:
+            if col != 'class':  # Avoid 'class' as target variable
+                plt.figure(figsize=(10, 6))
+                sns.boxplot(x=self.data[col], y=self.data['purchase_value'])
+                plt.title(f"Bivariate Analysis - {col} vs purchase_value")
+                plt.savefig(f'notebooks/plots/bivariante/boxplot_{col}.png', dpi=300, bbox_inches='tight')
+                plt.show()
+
+
+
     def feature_engineering(self):
         """Create new features like hours_of_day, hours_of_week and calculate transaction frequency and time-based features."""
         self.data['hour_of_day'] = self.data['purchase_time'].dt.hour
@@ -190,3 +220,6 @@ class FraudDataProcessor:
             for col in categorical_columns:
               self.data[col] = label_encoder.fit_transform(self.data[col])
         print(f"Categorical encoding using {method} completed.")
+
+
+
