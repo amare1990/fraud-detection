@@ -56,3 +56,8 @@ class FraudDataProcessor:
             plt.xlabel(column)
             plt.savefig(f'../notebooks/plots/{column}_.png', dpi=300, bbox_inches='tight')
             plt.show()
+
+    def handle_missing_values(self):
+        """Handle missing values by imputing or dropping them."""
+        self.data.fillna(self.data.median(), inplace=True)
+        print("Missing values handled.")
