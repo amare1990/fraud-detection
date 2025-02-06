@@ -1,0 +1,41 @@
+# Ignore environmental variables
+.env
+
+# Ignore python and jupyter notebook cache files
+v-fraud-detec/
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# Ignore Jupyter Notebook checkpoints, i.e., automatically generated
+notebooks/.ipynb_checkpoints/
+
+# Ignore all plot-related directories in the notebooks folder I created to store diagrams and charts
+notebooks/plots/
+
+# Ignore data
+data/
+
+
+# Logs and DBT files
+logs/
+my_project/
+dbt_modules/
+dbt.log
+
+# Ignore profiles.yml
+profiles.yml
+
+# Add this line to your .gitignore
+.user.yml
+
+# Ignore YOLO5
+yolov5/
+
+# Ignore log files
+detection_log.log
+notebooks/detection_log.log
+
+# Ignore large model files
+*.pt
