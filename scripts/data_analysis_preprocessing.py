@@ -15,7 +15,7 @@ from scipy.stats import chi2_contingency
 
 
 class FraudDataProcessor:
-    def __init__(self, data_path='../data/Fraud_Data.csv'):
+    def __init__(self, data_path='/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/data/Fraud_Data.csv'):
         """
         Initialize the class with the dataset.
         :param data: Pandas DataFrame
@@ -61,7 +61,7 @@ class FraudDataProcessor:
             sns.boxplot(x=self.data[column])
             plt.title(f"Boxplot of {column}")
             plt.xlabel(column)
-            plt.savefig(f'../notebooks/plots/outliers/outlier_{column}.png', dpi=300, bbox_inches='tight')
+            plt.savefig(f'/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/outliers/outlier_{column}.png', dpi=300, bbox_inches='tight')
             plt.show()
 
     def handle_missing_values(self, strategy="mean", threshold=1.5):
@@ -139,7 +139,7 @@ class FraudDataProcessor:
             plt.title(f"Univariate Analysis - {col}")
             plt.xlabel(col)  # X-label for numerical data
             plt.ylabel("Frequency")  # Y-label indicating frequency
-            plt.savefig(f'../notebooks/plots/univariante/numerical/hist_{col}.png', dpi=300, bbox_inches='tight')
+            plt.savefig(f'/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/univariante/numerical/hist_{col}.png', dpi=300, bbox_inches='tight')
             plt.show()
 
         """Perform univariante analysis on categorical columns."""
@@ -151,7 +151,7 @@ class FraudDataProcessor:
             plt.title(f"Univariante Analysis - {col}")
             plt.xlabel(col)  # X-label indicating the categorical variable
             plt.ylabel("Count")  # Y-label indicating the count of occurrences
-            plt.savefig(f'../notebooks/plots/univariante/categorical/countplot_{col}.png', dpi=300, bbox_inches='tight')
+            plt.savefig(f'/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/univariante/categorical/countplot_{col}.png', dpi=300, bbox_inches='tight')
             plt.show()
 
     def bivariate_analysis(self):
@@ -163,7 +163,7 @@ class FraudDataProcessor:
         corr_matrix = numerical_columns.corr()
         sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f")
         plt.title("Correlation Heatmap")
-        plt.savefig('../notebooks/plots/heatmap.png', dpi=300, bbox_inches='tight')
+        plt.savefig('/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/heatmap.png', dpi=300, bbox_inches='tight')
         plt.show()
 
         # Pair Plot (only a subset of columns for better visualization)
@@ -172,7 +172,7 @@ class FraudDataProcessor:
         subset = numerical_columns[:5]  # Adjust number of columns to display in pair plot
         sns.pairplot(self.data[subset], diag_kind='kde', plot_kws={'alpha': 0.5})
         plt.title("Bivariate Analysis - Pair Plot")
-        plt.savefig('../notebooks/plots/bivariante/pairplot.png', dpi=300, bbox_inches='tight')
+        plt.savefig('/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/bivariante/pairplot.png', dpi=300, bbox_inches='tight')
         plt.show()
 
         # Bivariate analysis on categorical
@@ -184,7 +184,7 @@ class FraudDataProcessor:
             plt.figure(figsize=(10, 6))
             sns.boxplot(x=self.data[col], y=self.data['class'])
             plt.title(f"Bivariate Analysis - {col} vs class")
-            plt.savefig(f'../notebooks/plots/bivariante/categ/boxplot_{col}.png', dpi=300, bbox_inches='tight')
+            plt.savefig(f'/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/bivariante/categ/boxplot_{col}.png', dpi=300, bbox_inches='tight')
             plt.show()
 
     # Bivariante analysis between categorical variables
@@ -201,7 +201,7 @@ class FraudDataProcessor:
         plt.figure(figsize=(10, 6))
         sns.countplot(x='browser', hue='source', data=self.data)
         plt.title("Bivariate Analysis - browser vs source")
-        plt.savefig(f'../notebooks/plots/bivariante/categ_stacked_bar_chart.png', dpi=300, bbox_inches='tight')
+        plt.savefig(f'/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/bivariante/categ_stacked_bar_chart.png', dpi=300, bbox_inches='tight')
         plt.show()
 
         # Optional: Chi-square test of independence
@@ -212,45 +212,55 @@ class FraudDataProcessor:
         else:
             print("The variables are likely independent.")
 
-    # def is_valid_ip(ip):
-    #     try:
-    #         ipaddress.ip_address(ip)  # Check if it's a valid IP
-    #         return True
-    #     except ValueError:
-    #         return False
-
-    #     # Filter invalid IPs
-    #     invalid_ips = fraud_detector.data[~fraud_detector.data['ip_address'].apply(is_valid_ip)]
-    #     print("Invalid IP addresses found:\n", invalid_ips)
 
     def ip_to_integer(self, ip):
-        """Convert IP address to an integer."""
+        """Convert an IP address stored as float64 to an integer."""
         try:
-            # Ensure IP is a string before conversion
-            ip = str(int(float(ip))) if isinstance(ip, float) else str(ip)
-            return int(ipaddress.ip_address(ip))
-        except ValueError:
-            return None  # Return None for invalid IPs
+            ip = int(ip)  # Convert float64 to int
+            if 0 <= ip <= 4294967295:  # Ensure valid IPv4 range
+                return ip
+            else:
+                print(f"Warning: Out-of-range IP encountered: {ip}")
+                return None
+        except (ValueError, TypeError):
+            print(f"Warning: Invalid IP address encountered: {ip}")
+            return None
 
     def merge_datasets_for_geolocation(self):
-        """Merge Fraud_Data.csv with IpAddress_to_Country.csv for geolocation analysis."""
-
-        # Convert IP addresses to integer format in both datasets
+        """Merge Fraud_Data.csv with IpAddress_to_Country.csv using IP ranges."""
+        # Convert IP addresses to integer format
         self.data['ip_int'] = self.data['ip_address'].apply(self.ip_to_integer)
 
-        ip_to_country = pd.read_csv('IpAddress_to_Country.csv')
+        # Debugging: Show how many valid IPs exist after conversion
+        print(f"Number of valid IPs in the dataset: {self.data['ip_int'].notna().sum()}")
+
+        self.data = self.data.dropna(subset=['ip_int'])  # Remove invalid IPs
+
+        ip_to_country = pd.read_csv('/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/data/IpAddress_to_Country.csv')
+
+        # Convert IP ranges to integer format
         ip_to_country['lower_bound_ip_int'] = ip_to_country['lower_bound_ip_address'].apply(self.ip_to_integer)
         ip_to_country['upper_bound_ip_int'] = ip_to_country['upper_bound_ip_address'].apply(self.ip_to_integer)
 
-        # Merge datasets
-        self.data = pd.merge(self.data, ip_to_country[['lower_bound_ip_int', 'upper_bound_ip_int', 'country']],
-                             left_on='ip_int', right_on='lower_bound_ip_int', how='left')
+        # Debugging: Check the number of valid IP ranges in IpAddress_to_Country.csv
+        print(f"Valid IP ranges in IpAddress_to_Country.csv: {ip_to_country['lower_bound_ip_int'].notna().sum()}")
 
-        # Optional: You may need to filter the rows based on the IP range
-        self.data = self.data[(self.data['ip_int'] >= self.data['lower_bound_ip_int']) &
-                              (self.data['ip_int'] <= self.data['upper_bound_ip_int'])]
+        # Merge using IP ranges: Ensure we're matching the IP correctly
+        merged_data = pd.merge(self.data, ip_to_country, how='left', left_on='ip_int', right_on='lower_bound_ip_int')
 
+        # Debugging: Check if the merge keeps data
+        print(f"Shape after merge: {merged_data.shape}")
+
+        # Optional: Filter to only keep rows where IP falls within the expected range
+        merged_data = merged_data[(merged_data['ip_int'] >= merged_data['lower_bound_ip_int']) &
+                                (merged_data['ip_int'] <= merged_data['upper_bound_ip_int'])]
+
+        # Debugging: Check how many rows are kept after filtering
+        print(f"Shape after filtering: {merged_data.shape}")
+
+        self.data = merged_data  # Final merged dataset
         print("Datasets merged for geolocation analysis.")
+
 
 
     def feature_engineering(self):
@@ -300,7 +310,7 @@ class FraudDataProcessor:
               self.data[col] = label_encoder.fit_transform(self.data[col])
         print(f"Categorical encoding using {method} completed.")
 
-    def save_processed_data(self, output_path='../data/processed_data.csv'):
+    def save_processed_data(self, output_path='/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/data/processed_data.csv'):
         """Save the processed data to a CSV file."""
         self.data.to_csv(output_path, index=False)
         print(f"Processed data saved to {output_path}")
@@ -315,12 +325,12 @@ class FraudDataProcessor:
         self.handle_missing_values()
         self.remove_duplicates()
         self.correct_data_types()
-        self.univariate_analysis()
-        self.bivariate_analysis()
-        self.bivariate_categorical_analysis()
+        # self.univariate_analysis()
+        # self.bivariate_analysis()
+        # self.bivariate_categorical_analysis()
 
-        self.merge_datasets_for_geolocation()
-        self.feature_engineering()
-        self.normalize_and_scale()
-        self.encode_categorical_features()
-        self.save_processed_data()
+        # self.merge_datasets_for_geolocation()
+        # self.feature_engineering()
+        # self.normalize_and_scale()
+        # self.encode_categorical_features()
+        # self.save_processed_data()
