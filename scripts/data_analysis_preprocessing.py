@@ -275,9 +275,9 @@ class FraudDataProcessor:
         lambda x: x.diff().dt.total_seconds().le(86400).cumsum())
 
         # Transaction Velocity: Calculate the total amount spent by each user in the last 24 hours.
-        self.data['transaction_velocity'] = self.data.groupby('user_id')['purchase_value'].transform(
-        lambda x: x.rolling('1D', on='purchase_time').sum())
-        print("Feature engineering completed.")
+        self.data['transaction_velocity'] = self.data.groupby('user_id', group_keys=False)[['purchase_value', 'purchase_time']].apply(
+            lambda g: g.set_index('purchase_time').rolling('1D')['purchase_value'].sum()
+        ).reset_index(level=0, drop=True) #reset_index to match original df
 
     def normalize_and_scale(self):
         """Normalize and scale numerical features."""
