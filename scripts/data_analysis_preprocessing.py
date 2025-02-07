@@ -295,7 +295,7 @@ class FraudDataProcessor:
 
         if method == 'onehot':
 
-            encoder = OneHotEncoder(sparse=False, handle_unknown='ignore')
+            encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
 
             for col in categorical_columns:
               # Reshape and fit transform
