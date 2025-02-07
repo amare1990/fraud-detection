@@ -325,12 +325,14 @@ class FraudDataProcessor:
         self.handle_missing_values()
         self.remove_duplicates()
         self.correct_data_types()
-        # self.univariate_analysis()
-        # self.bivariate_analysis()
-        # self.bivariate_categorical_analysis()
+
+        # Exploratory Data Analysis/ Visualizations
+        self.univariate_analysis()
+        self.bivariate_analysis()
+        self.bivariate_categorical_analysis()
 
         # self.merge_datasets_for_geolocation()
-        # self.feature_engineering()
-        # self.normalize_and_scale()
-        # self.encode_categorical_features()
-        # self.save_processed_data()
+        self.feature_engineering()
+        self.normalize_and_scale()
+        self.encode_categorical_features()
+        self.save_processed_data()
