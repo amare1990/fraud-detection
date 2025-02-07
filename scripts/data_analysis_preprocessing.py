@@ -61,7 +61,7 @@ class FraudDataProcessor:
             sns.boxplot(x=self.data[column])
             plt.title(f"Boxplot of {column}")
             plt.xlabel(column)
-            plt.savefig(f'../notebooks/plots/outlier_{column}.png', dpi=300, bbox_inches='tight')
+            plt.savefig(f'../notebooks/plots/outliers/outlier_{column}.png', dpi=300, bbox_inches='tight')
             plt.show()
 
     def handle_missing_values(self, strategy="mean", threshold=1.5):
@@ -139,7 +139,7 @@ class FraudDataProcessor:
             plt.title(f"Univariate Analysis - {col}")
             plt.xlabel(col)  # X-label for numerical data
             plt.ylabel("Frequency")  # Y-label indicating frequency
-            plt.savefig(f'../notebooks/plots/univariante/hist_{col}.png', dpi=300, bbox_inches='tight')
+            plt.savefig(f'../notebooks/plots/univariante/numerical/hist_{col}.png', dpi=300, bbox_inches='tight')
             plt.show()
 
         """Perform univariante analysis on categorical columns."""
@@ -151,7 +151,7 @@ class FraudDataProcessor:
             plt.title(f"Univariante Analysis - {col}")
             plt.xlabel(col)  # X-label indicating the categorical variable
             plt.ylabel("Count")  # Y-label indicating the count of occurrences
-            plt.savefig(f'../notebooks/plots/univariante/countplot_{col}.png', dpi=300, bbox_inches='tight')
+            plt.savefig(f'../notebooks/plots/univariante/categorical/countplot_{col}.png', dpi=300, bbox_inches='tight')
             plt.show()
 
     def bivariate_analysis(self):
@@ -172,19 +172,20 @@ class FraudDataProcessor:
         subset = numerical_columns[:5]  # Adjust number of columns to display in pair plot
         sns.pairplot(self.data[subset], diag_kind='kde', plot_kws={'alpha': 0.5})
         plt.title("Bivariate Analysis - Pair Plot")
-        plt.savefig('notebooks/plots/bivariante/paiplot.png', dpi=300, bbox_inches='tight')
+        plt.savefig('notebooks/plots/bivariante/pairplot.png', dpi=300, bbox_inches='tight')
         plt.show()
 
-        # Bivariate analysis on categorical vs numerical (Boxplot example)
+        # Bivariate analysis on categorical
         print("Bivariate Analysis - Boxplot:")
-        categorical_columns = self.data.select_dtypes(include=['object', 'category']).columns.tolist()
+        # categorical_columns = self.data.select_dtypes(include=['object', 'category']).columns.tolist()
+        categorical_columns = ['purchase_value', 'source', 'browser', 'sex']
         for col in categorical_columns:
-            if col != 'class':  # Avoid 'class' as target variable
-                plt.figure(figsize=(10, 6))
-                sns.boxplot(x=self.data[col], y=self.data['purchase_value'])
-                plt.title(f"Bivariate Analysis - {col} vs purchase_value")
-                plt.savefig(f'notebooks/plots/bivariante/boxplot_{col}.png', dpi=300, bbox_inches='tight')
-                plt.show()
+            # if col != 'class':  # Avoid 'class' as target variable
+            plt.figure(figsize=(10, 6))
+            sns.boxplot(x=self.data[col], y=self.data['class'])
+            plt.title(f"Bivariate Analysis - {col} vs class")
+            plt.savefig(f'notebooks/plots/bivariante/categ/boxplot_{col}.png', dpi=300, bbox_inches='tight')
+            plt.show()
 
     # Bivariante analysis between categorical variables
     def bivariate_categorical_analysis(self):
@@ -211,12 +212,29 @@ class FraudDataProcessor:
         else:
             print("The variables are likely independent.")
 
+    # def is_valid_ip(ip):
+    #     try:
+    #         ipaddress.ip_address(ip)  # Check if it's a valid IP
+    #         return True
+    #     except ValueError:
+    #         return False
+
+    #     # Filter invalid IPs
+    #     invalid_ips = fraud_detector.data[~fraud_detector.data['ip_address'].apply(is_valid_ip)]
+    #     print("Invalid IP addresses found:\n", invalid_ips)
+
     def ip_to_integer(self, ip):
         """Convert IP address to an integer."""
-        return int(ipaddress.ip_address(ip))
+        try:
+            # Ensure IP is a string before conversion
+            ip = str(int(float(ip))) if isinstance(ip, float) else str(ip)
+            return int(ipaddress.ip_address(ip))
+        except ValueError:
+            return None  # Return None for invalid IPs
 
     def merge_datasets_for_geolocation(self):
         """Merge Fraud_Data.csv with IpAddress_to_Country.csv for geolocation analysis."""
+
         # Convert IP addresses to integer format in both datasets
         self.data['ip_int'] = self.data['ip_address'].apply(self.ip_to_integer)
 
@@ -300,6 +318,12 @@ class FraudDataProcessor:
         self.univariate_analysis()
         self.bivariate_analysis()
         self.bivariate_categorical_analysis()
+
+        # Identify and print invalid IP addresses
+        self.data['ip_int'] = self.data['ip_address'].apply(self.ip_to_integer)
+        invalid_ips = self.data[self.data['ip_int'].isnull()]
+        print("Invalid IP addresses found:\n", invalid_ips)
+
         self.merge_datasets_for_geolocation()
         self.feature_engineering()
         self.normalize_and_scale()
