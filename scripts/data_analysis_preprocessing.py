@@ -163,7 +163,7 @@ class FraudDataProcessor:
         corr_matrix = numerical_columns.corr()
         sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f")
         plt.title("Correlation Heatmap")
-        plt.savefig('notebooks/plots/heatmap.png', dpi=300, bbox_inches='tight')
+        plt.savefig('../notebooks/plots/heatmap.png', dpi=300, bbox_inches='tight')
         plt.show()
 
         # Pair Plot (only a subset of columns for better visualization)
@@ -172,7 +172,7 @@ class FraudDataProcessor:
         subset = numerical_columns[:5]  # Adjust number of columns to display in pair plot
         sns.pairplot(self.data[subset], diag_kind='kde', plot_kws={'alpha': 0.5})
         plt.title("Bivariate Analysis - Pair Plot")
-        plt.savefig('notebooks/plots/bivariante/pairplot.png', dpi=300, bbox_inches='tight')
+        plt.savefig('../notebooks/plots/bivariante/pairplot.png', dpi=300, bbox_inches='tight')
         plt.show()
 
         # Bivariate analysis on categorical
@@ -184,7 +184,7 @@ class FraudDataProcessor:
             plt.figure(figsize=(10, 6))
             sns.boxplot(x=self.data[col], y=self.data['class'])
             plt.title(f"Bivariate Analysis - {col} vs class")
-            plt.savefig(f'notebooks/plots/bivariante/categ/boxplot_{col}.png', dpi=300, bbox_inches='tight')
+            plt.savefig(f'../notebooks/plots/bivariante/categ/boxplot_{col}.png', dpi=300, bbox_inches='tight')
             plt.show()
 
     # Bivariante analysis between categorical variables
@@ -201,7 +201,7 @@ class FraudDataProcessor:
         plt.figure(figsize=(10, 6))
         sns.countplot(x='browser', hue='source', data=self.data)
         plt.title("Bivariate Analysis - browser vs source")
-        plt.savefig(f'notebooks/plots/bivariante/categ_stacked_bar_chart.png', dpi=300, bbox_inches='tight')
+        plt.savefig(f'../notebooks/plots/bivariante/categ_stacked_bar_chart.png', dpi=300, bbox_inches='tight')
         plt.show()
 
         # Optional: Chi-square test of independence
@@ -318,11 +318,6 @@ class FraudDataProcessor:
         self.univariate_analysis()
         self.bivariate_analysis()
         self.bivariate_categorical_analysis()
-
-        # Identify and print invalid IP addresses
-        self.data['ip_int'] = self.data['ip_address'].apply(self.ip_to_integer)
-        invalid_ips = self.data[self.data['ip_int'].isnull()]
-        print("Invalid IP addresses found:\n", invalid_ips)
 
         self.merge_datasets_for_geolocation()
         self.feature_engineering()
