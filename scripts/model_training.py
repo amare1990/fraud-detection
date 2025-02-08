@@ -22,6 +22,8 @@ from sklearn.neural_network import MLPClassifier
 
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report, confusion_matrix
 
+import pickle
+
 from scripts.cnn import CNNModel
 from scripts.lstm import LSTMModel
 
@@ -201,3 +203,18 @@ class FraudDetectionModel:
         self.models[model_type] = model
 
         return perf_result
+
+
+    def save_model(self, model_name):
+        model = self.models.get(model_name)
+        if not model:
+            print(f'Model {model_name} not found!')
+            return
+
+        if model_name in ['CNN', 'LSTM']:
+            torch.save(model.state_dict(), f'../models/{model_name}.pth')
+        else:
+            with open(f'../models/{model_name}.pkl', 'wb') as f:
+                pickle.dump(model, f'../models/{model_name}.pkl')
+
+        print(f'Model {model_name} saved successfuly!')
