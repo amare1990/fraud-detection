@@ -1,5 +1,6 @@
-import pandas as pd
-import numpy as np
+"""
+CNN model creation and forwarding.
+"""
 
 import torch
 import torch.nn as nn

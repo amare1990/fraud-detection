@@ -1,3 +1,8 @@
+"""
+LSTMModel creation and forwarding
+"""
+
+
 import torch
 import torch.nn as nn
 
