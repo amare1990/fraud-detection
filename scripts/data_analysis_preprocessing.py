@@ -211,7 +211,7 @@ class FraudDataProcessor:
         # Bivariate analysis on categorical
         print("Bivariate Analysis - Boxplot:")
         # categorical_columns = self.data.select_dtypes(include=['object', 'category']).columns.tolist()
-        categorical_columns = ['purchase_value', 'source', 'browser', 'sex']
+        categorical_columns = ['browser', 'source', 'sex']
         for col in categorical_columns:
             # if col != 'class':  # Avoid 'class' as target variable
             plt.figure(figsize=(10, 6))
