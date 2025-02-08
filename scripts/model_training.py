@@ -24,6 +24,8 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 import mlflow
 import mlflow.sklearn
+import mlflow.pytorch
+
 import pickle
 
 from scripts.cnn import CNNModel
