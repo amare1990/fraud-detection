@@ -2,12 +2,8 @@
 LSTMModel creation and forwarding
 """
 
-
 import torch
 import torch.nn as nn
-
-
-
 
 
 # LSTM Model in PyTorch
