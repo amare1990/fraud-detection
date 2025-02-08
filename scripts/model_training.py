@@ -5,6 +5,8 @@ Model building building, training, evalauation.
 import pandas as pd
 import numpy as np
 
+import matplotlib.pyplot as plt
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -103,6 +105,28 @@ class FraudDetectionModel:
 
         criterion = nn.BCELoss()
         optimizer = optim.Adam(model.parameters(), lr= learning_rate)
+
+
+        print(f'Training {model_type} Model...')
+        # Store losses for visualization
+        losses = []
+
+        for epoch in range(epochs):
+            model.train()
+            epoch_loss = 0
+            for batch_x, batch_y in train_loader:
+                optimizer.zero_grad()
+                outputs = model(batch_x)
+                loss = criterion(outputs, batch_y)
+                loss.backward()
+                optimizer.step()
+                epoch_loss += loss.item()
+
+            avg_loss = epoch_loss / len(train_loader)
+            losses.append(avg_loss)  # Store loss for plotting
+
+            print(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss / len(train_loader):.4f}")
+
 
 
 
