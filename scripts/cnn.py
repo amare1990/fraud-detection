@@ -16,3 +16,11 @@ class CNNModel(nn.Module):
         self.fc1 = nn.Linear(64 * (input_size // 2 // 2), 128)
         self.fc2 = nn.Linear(128, 1)
         self.sigmoid = nn.Sigmoid()
+
+
+    def forward(self, x):
+        x = self.pool(torch.relu(self.conv1(x)))
+        x = self.pool(torch.relu(self.conv2(x)))
+        x = self.flatten(x)
+        x = torch.relu(self.fc1(x))
+        return self.sigmoid(self.fc2(x))
