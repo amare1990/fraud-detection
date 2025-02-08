@@ -145,16 +145,59 @@ class FraudDetectionModel:
         # Show the plot (optional)
         plt.show()
 
-        # Model evaluation
+
+        # Model evaluation for deep learning
         model.eval()
         correct, total = 0, 0
+        predictions_list = []
+        true_labels_list = []
+
+        # Create a dictionary to store performance metrics
+        perf_result = {}
+
         with torch.no_grad():
-            for batch_x, batch in test_loader:
+            for batch_x, batch_y in test_loader:
                 outputs = model(batch_x)
-                predictions = (outputs > 0.5).float()
+                predictions = (outputs > 0.5).float()  # Assuming binary classification
+                predictions_list.extend(predictions.cpu().numpy())  # Store predictions
+                true_labels_list.extend(batch_y.cpu().numpy())  # Store true labels
                 correct += (predictions == batch_y).sum().item()
                 total += batch_y.size(0)
 
-        accuracy = correct/total
-        print(f'{model_type} Accuracy: {accuracy:.4f}')
+        accuracy = correct / total
+
+        # Convert lists to arrays for metric calculations
+        predictions_array = np.array(predictions_list)
+        true_labels_array = np.array(true_labels_list)
+
+        # Calculate performance metrics
+        precision = precision_score(true_labels_array, predictions_array, average='weighted')
+        recall = recall_score(true_labels_array, predictions_array, average='weighted')
+        f1 = f1_score(true_labels_array, predictions_array, average='weighted')
+        conf_matrix = confusion_matrix(true_labels_array, predictions_array)
+        class_report = classification_report(true_labels_array, predictions_array)
+
+        # Print metrics
+        print(f"{model_type} Accuracy: {accuracy:.4f}")
+        print(f"Precision: {precision:.4f}")
+        print(f"Recall: {recall:.4f}")
+        print(f"F1-Score: {f1:.4f}")
+        print("Confusion Matrix:")
+        print(conf_matrix)
+        print("Classification Report:")
+        print(class_report)
+
+        # Store the results in perf_result
+        perf_result[model_type] = {
+            'accuracy': accuracy,
+            'precision': precision,
+            'recall': recall,
+            'f1_score': f1,
+            'conf_matrix': conf_matrix,
+            'class_report': class_report
+        }
+
+        # Save the model
         self.models[model_type] = model
+
+        return perf_result
