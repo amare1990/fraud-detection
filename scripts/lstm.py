@@ -13,3 +13,10 @@ class LSTMModel(nn.Module):
         self.lstm2 = nn.LSTM(input_size=50, hidden_size=50, batch_first=True)
         self.fc1 = nn.Linear(50, 1)
         self.sigmoid = nn.Sigmoid()
+
+
+    def forward(self, x):
+        x, _ = self.lstm1(x)
+        x, _ = self.lstm2(x)
+        x = torch.relu(x[:, -1, :])  # Use the last time step output
+        return self.sigmoid(self.fc1(x))
