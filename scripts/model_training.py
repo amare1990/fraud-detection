@@ -138,19 +138,23 @@ class FraudDetectionModel:
         plt.grid()
 
         # Save the loss plot
-        loss_plot_path = f"{model_type}_training_loss.png"
+        loss_plot_path = f"../notebooks/plots/{model_type}_training_loss.png"
         plt.savefig(loss_plot_path)
         print(f"Loss plot saved as {loss_plot_path}")
 
         # Show the plot (optional)
         plt.show()
 
+        # Model evaluation
+        model.eval()
+        correct, total = 0, 0
+        with torch.no_grad():
+            for batch_x, batch in test_loader:
+                outputs = model(batch_x)
+                predictions = (outputs > 0.5).float()
+                correct += (predictions == batch_y).sum().item()
+                total += batch_y.size(0)
 
-
-
-
-
-
-
-
-
+        accuracy = correct/total
+        print(f'{model_type} Accuracy: {accuracy:.4f}')
+        self.models[model_type] = model
