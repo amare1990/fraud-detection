@@ -128,6 +128,24 @@ class FraudDetectionModel:
             print(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss / len(train_loader):.4f}")
 
 
+        # Plot loss curve
+        plt.figure(figsize=(8, 6))
+        plt.plot(range(1, epochs + 1), losses, marker='o', linestyle='-', color='b', label=f'{model_type} Loss')
+        plt.xlabel("Epochs")
+        plt.ylabel("Loss")
+        plt.title(f"{model_type} Training Loss Curve")
+        plt.legend()
+        plt.grid()
+
+        # Save the loss plot
+        loss_plot_path = f"{model_type}_training_loss.png"
+        plt.savefig(loss_plot_path)
+        print(f"Loss plot saved as {loss_plot_path}")
+
+        # Show the plot (optional)
+        plt.show()
+
+
 
 
 
