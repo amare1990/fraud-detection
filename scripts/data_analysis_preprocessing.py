@@ -139,9 +139,13 @@ class FraudDataProcessor:
 
     def correct_data_types(self):
         """Convert columns to appropriate data types."""
+        print(f'Data type of {self.data['signup_time']} before correction: {self.data['signup_time'].dtype}')
+        print(f'Data type of {self.data['purchase_time']} before correction: {self.data['purchase_time'].dtype}')
         self.data['signup_time'] = pd.to_datetime(self.data['signup_time'])
         self.data['purchase_time'] = pd.to_datetime(self.data['purchase_time'])
         print("Data types corrected.")
+        print(f'Data type of {self.data['signup_time']} after correction: {self.data['signup_time'].dtype}')
+        print(f'Data type of {self.data['purchase_time']} after correction: {self.data['purchase_time'].dtype}')
 
     def univariate_analysis(self):
         """Perform univariate analysis on numerical columns."""
@@ -252,6 +256,7 @@ class FraudDataProcessor:
         else:
             print("The variables are likely independent.")
 
+
     def ip_to_integer(self, ip):
         """Convert an IP address stored as float64 to an integer."""
         try:
@@ -270,47 +275,47 @@ class FraudDataProcessor:
         # Convert IP addresses to integer format
         self.data['ip_int'] = self.data['ip_address'].apply(self.ip_to_integer)
 
-        # Debugging: Show how many valid IPs exist after conversion
-        print(
-            f"Number of valid IPs in the dataset: {self.data['ip_int'].notna().sum()}")
+        # Drop invalid IPs
+        self.data = self.data.dropna(subset=['ip_int'])
+        self.data['ip_int'] = self.data['ip_int'].astype(int)  # Ensure int type
 
-        self.data = self.data.dropna(subset=['ip_int'])  # Remove invalid IPs
+        print(f"Number of valid IPs: {self.data.shape[0]}")
 
+        # Load IP-to-country mapping
         ip_to_country = pd.read_csv(
             '/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/data/IpAddress_to_Country.csv')
 
-        # Convert IP ranges to integer format
-        ip_to_country['lower_bound_ip_int'] = ip_to_country['lower_bound_ip_address'].apply(
-            self.ip_to_integer)
-        ip_to_country['upper_bound_ip_int'] = ip_to_country['upper_bound_ip_address'].apply(
-            self.ip_to_integer)
+        # Convert lower and upper bounds to integer format
+        ip_to_country['lower_bound_ip_int'] = ip_to_country['lower_bound_ip_address'].apply(self.ip_to_integer)
+        ip_to_country['upper_bound_ip_int'] = ip_to_country['upper_bound_ip_address'].apply(self.ip_to_integer)
 
-        # Debugging: Check the number of valid IP ranges in
-        # IpAddress_to_Country.csv
-        print(
-            f"Valid IP ranges in IpAddress_to_Country.csv: {ip_to_country['lower_bound_ip_int'].notna().sum()}")
+        # Drop invalid rows
+        ip_to_country = ip_to_country.dropna(subset=['lower_bound_ip_int', 'upper_bound_ip_int'])
+        ip_to_country['lower_bound_ip_int'] = ip_to_country['lower_bound_ip_int'].astype(int)
+        ip_to_country['upper_bound_ip_int'] = ip_to_country['upper_bound_ip_int'].astype(int)
 
-        # Merge using IP ranges: Ensure we're matching the IP correctly
-        merged_data = pd.merge(
-            self.data,
-            ip_to_country,
-            how='left',
+        print(f"Valid IP ranges in dataset: {ip_to_country.shape[0]}")
+
+        # Sort both datasets for merge_asof (which requires sorted data)
+        self.data = self.data.sort_values(by='ip_int')
+        ip_to_country = ip_to_country.sort_values(by='lower_bound_ip_int')
+
+        # Perform a range-based merge using merge_asof
+        merged_data = pd.merge_asof(
+            self.data, ip_to_country,
             left_on='ip_int',
-            right_on='lower_bound_ip_int')
+            right_on='lower_bound_ip_int',
+            direction='backward'  # Ensure we find the closest lower bound
+        )
 
-        # Debugging: Check if the merge keeps data
-        print(f"Shape after merge: {merged_data.shape}")
+        # Filter out rows where IP exceeds the upper bound
+        merged_data = merged_data[merged_data['ip_int'] <= merged_data['upper_bound_ip_int']]
 
-        # Optional: Filter to only keep rows where IP falls within the expected
-        # range
-        merged_data = merged_data[(merged_data['ip_int'] >= merged_data['lower_bound_ip_int']) &
-                                  (merged_data['ip_int'] <= merged_data['upper_bound_ip_int'])]
+        print(f"Final merged data shape: {merged_data.shape}")
 
-        # Debugging: Check how many rows are kept after filtering
-        print(f"Shape after filtering: {merged_data.shape}")
+        self.data = merged_data  # Save final merged dataset
+        print("Datasets successfully merged for geolocation analysis.")
 
-        self.data = merged_data  # Final merged dataset
-        print("Datasets merged for geolocation analysis.")
 
     def feature_engineering(self):
         """Create new features like hours_of_day, hours_of_week and calculate transaction frequency and time-based features."""
