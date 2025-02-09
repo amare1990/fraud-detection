@@ -349,32 +349,36 @@ class FraudDataProcessor:
         print("Normalization and scaling done.")
 
     def encode_categorical_features(self, method='onehot'):
-        """Encode categorical features using Label Encoding."""
-        print("Encoding categorical features... starting")
+        """Encode selected categorical features using One-Hot or Label Encoding."""
+        print("Encoding selected categorical features... starting")
+
         label_encoder = LabelEncoder()
-        categorical_columns = self.data.select_dtypes(
-            include=['object', 'category']).columns.tolist()
+
+        # Features to encode
+        selected_categorical_columns = ['ip_address_country', 'sex', 'browser', 'source']
+
+        # Ensure only existing columns are selected
+        selected_categorical_columns = [col for col in selected_categorical_columns if col in self.data.columns]
 
         if method == 'onehot':
+            encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
 
-            encoder = OneHotEncoder(
-                sparse_output=False,
-                handle_unknown='ignore')
-
-            for col in categorical_columns:
+            for col in selected_categorical_columns:
                 # Reshape and fit transform
                 encoded_data = encoder.fit_transform(self.data[[col]])
                 encoded_df = pd.DataFrame(
-                    encoded_data, columns=[
-                        f"{col}_{category}" for category in encoder.categories_[0]])
+                    encoded_data,
+                    columns=[f"{col}_{category}" for category in encoder.categories_[0]]
+                )
 
-                # Drop the original column and concatenate the one-hot encoded
-                # columns
+                # Drop original column and concatenate encoded columns
                 self.data = self.data.drop(col, axis=1)
                 self.data = pd.concat([self.data, encoded_df], axis=1)
-        else:
-            for col in categorical_columns:
+
+        else:  # Label Encoding
+            for col in selected_categorical_columns:
                 self.data[col] = label_encoder.fit_transform(self.data[col])
+
         print(f"Categorical encoding using {method} completed.")
 
     def save_processed_data(
