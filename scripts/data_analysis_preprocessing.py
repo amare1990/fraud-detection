@@ -139,13 +139,13 @@ class FraudDataProcessor:
 
     def correct_data_types(self):
         """Convert columns to appropriate data types."""
-        print(f'Data type of {self.data['signup_time']} before correction: {self.data['signup_time'].dtype}')
-        print(f'Data type of {self.data['purchase_time']} before correction: {self.data['purchase_time'].dtype}')
+        print(f"Data type of signup_time before correction: {self.data['signup_time'].dtype}")
+        print(f"Data type of purchase_time before correction: {self.data['purchase_time'].dtype}")
         self.data['signup_time'] = pd.to_datetime(self.data['signup_time'])
         self.data['purchase_time'] = pd.to_datetime(self.data['purchase_time'])
         print("Data types corrected.")
-        print(f'Data type of {self.data['signup_time']} after correction: {self.data['signup_time'].dtype}')
-        print(f'Data type of {self.data['purchase_time']} after correction: {self.data['purchase_time'].dtype}')
+        print(f"Data type of signup_time after correction: {self.data['signup_time'].dtype}")
+        print(f"Data type of purchase_time after correction: {self.data['purchase_time'].dtype}")
 
     def univariate_analysis(self):
         """Perform univariate analysis on numerical columns."""
@@ -342,9 +342,10 @@ class FraudDataProcessor:
         """Normalize and scale numerical features."""
         print("Normalizing and scaling numerical features... starting")
         scaler = StandardScaler()
-        numerical_columns = self.retrieve_numerical_columns()
-        self.data[numerical_columns] = scaler.fit_transform(
-            self.data[numerical_columns])
+        # numerical_columns = self.retrieve_numerical_columns()
+        scalable_columns = ['age', 'transaction_frequency', 'transaction_velocity', 'purchase_value']
+        print(f"Scalable columns: {scalable_columns}")
+        self.data[scalable_columns] = scaler.fit_transform(self.data[scalable_columns])
         print("Normalization and scaling done.")
 
     def encode_categorical_features(self, method='onehot'):
