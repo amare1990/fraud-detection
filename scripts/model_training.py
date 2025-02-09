@@ -18,6 +18,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
 from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.neural_network import MLPClassifier
@@ -65,6 +66,7 @@ class FraudDetectionModel:
     def train_sklearn_models(self):
         models = {
             "Logistic Regression": LogisticRegression(),
+            "Support Vector Machine": SVC(),  # Added Support Vector Machine
             "Decision Tree": DecisionTreeClassifier(),
             "Random Forest": RandomForestClassifier(),
             "Gradient Boosting": GradientBoostingClassifier(),
@@ -88,6 +90,12 @@ class FraudDetectionModel:
             class_report = classification_report(self.y_test, y_pred)
 
             print(f"{name} Accuracy: {accuracy:.4f}")
+            print(f"{name} Precision: {precision:.4f}")
+            print(f"{name} Recall: {recall:.4f}")
+            print(f"{name} F1-Score: {f1:.4f}")
+            print(f"{name} Confusion Matrix:")
+            print(conf_matrix)
+            print(f"{name} class_report:")
             print(class_report)
 
             perf_result[name] = {
