@@ -110,10 +110,23 @@ class FraudDetectionModel:
             self.y_test, dtype=torch.float32).unsqueeze(1)
 
         # Reshape
-        X_train_tensor = X_train_tensor.unsqueeze(
-            1) if model_type == 'CNN' else X_train_tensor.unsqueeze(2)
-        X_test_tensor = X_test_tensor.unsqueeze(
-            1) if model_type == 'CNN' else X_test_tensor.unsqueeze(2)
+        # The issue was with the reshaping for LSTM. It should be (batch_size, sequence_length, input_size)
+        # For LSTM, sequence_length can be 1 if you're treating each data point as a single time step.
+
+        # Original code:
+        # X_train_tensor = X_train_tensor.unsqueeze(
+        #    1) if model_type == 'CNN' else X_train_tensor.unsqueeze(2)
+        # X_test_tensor = X_test_tensor.unsqueeze(
+        #    1) if model_type == 'CNN' else X_test_tensor.unsqueeze(2)
+
+        # Corrected code:
+        if model_type == 'CNN':
+            X_train_tensor = X_train_tensor.unsqueeze(1)
+            X_test_tensor = X_test_tensor.unsqueeze(1)
+        else:  # model_type == 'LSTM'
+            # Assuming sequence length of 1
+            X_train_tensor = X_train_tensor.unsqueeze(1)
+            X_test_tensor = X_test_tensor.unsqueeze(1)
 
         train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
         test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
