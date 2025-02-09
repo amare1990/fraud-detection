@@ -30,6 +30,7 @@ import mlflow.sklearn
 import mlflow.pytorch
 
 from scripts.cnn import CNNModel
+from scripts.rnn import RNNModel
 from scripts.lstm import LSTMModel
 
 
@@ -119,14 +120,11 @@ class FraudDetectionModel:
         # X_test_tensor = X_test_tensor.unsqueeze(
         #    1) if model_type == 'CNN' else X_test_tensor.unsqueeze(2)
 
-        # Corrected code:
-        if model_type == 'CNN':
-            X_train_tensor = X_train_tensor.unsqueeze(1)
-            X_test_tensor = X_test_tensor.unsqueeze(1)
-        else:  # model_type == 'LSTM'
-            # Assuming sequence length of 1
-            X_train_tensor = X_train_tensor.unsqueeze(1)
-            X_test_tensor = X_test_tensor.unsqueeze(1)
+
+        # Reshape data to add sequence_length dimension
+        X_train_tensor = X_train_tensor.unsqueeze(1)
+        X_test_tensor = X_test_tensor.unsqueeze(1)
+
 
         train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
         test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
@@ -141,8 +139,14 @@ class FraudDetectionModel:
             shuffle=True)
 
         input_size = self.X_train.shape[1]
-        model = CNNModel(
-            input_size) if model_type == 'CNN' else LSTMModel(input_size)
+
+        # Initialize model based on model_type
+        if model_type == 'CNN':
+            model = CNNModel(input_size)
+        elif model_type == 'RNN':
+            model = RNNModel(input_size)  # Initialize RNNModel
+        else:  # model_type == 'LSTM'
+            model = LSTMModel(input_size)
 
         criterion = nn.BCELoss()
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
