@@ -272,8 +272,9 @@ class FraudDetectionModel:
         if model_name in ['CNN', 'LSTM']:
             torch.save(model.state_dict(), f'../models/{model_name}.pth')
         else:
+            # Open the file in write binary mode ('wb')
             with open(f'../models/{model_name}.pkl', 'wb') as f:
-                pickle.dump(model, f'../models/{model_name}.pkl')
+                pickle.dump(model, f)  # Pass the file object 'f' to pickle.dump
 
         print(f'Model {model_name} saved successfuly!')
 
