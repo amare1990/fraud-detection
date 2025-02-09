@@ -81,7 +81,7 @@ These datasets support transaction analysis, feature engineering, and model trai
 - The `pylint` linters are added in the `.github/workflows` direcory of the repo, which is triggered while creating GitHub pull requests.
 - Make it to check when Pull request is created
 - Run `pylint scripts/*.py` to check if the code follows the standard format
-- Run `autopep8 --in-place --aggressive --aggressive scripts/*.py` to automatically fix some linters errors
+- Run `autopep8 --in-place --aggressive scripts/*.py` to automatically fix some linters errors
 
 
 ### Data Analysis and Preprocessing
