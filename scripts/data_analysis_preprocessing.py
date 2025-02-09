@@ -336,6 +336,7 @@ class FraudDataProcessor:
 
     def encode_categorical_features(self, method='onehot'):
         """Encode selected categorical features using One-Hot or Label Encoding."""
+        print("\n\n*****************************************************\n")
         print("Encoding selected categorical features... starting")
 
         label_encoder = LabelEncoder()
@@ -345,6 +346,9 @@ class FraudDataProcessor:
 
         # Ensure only existing columns are selected
         selected_categorical_columns = [col for col in selected_categorical_columns if col in self.data.columns]
+        # Fill missing values with 'Unknown' to prevent the creation of extra 'nan' columns
+        self.data[selected_categorical_columns] = self.data[selected_categorical_columns].astype(str)
+
 
         if method == 'onehot':
             encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
@@ -364,6 +368,13 @@ class FraudDataProcessor:
         else:  # Label Encoding
             for col in selected_categorical_columns:
                 self.data[col] = label_encoder.fit_transform(self.data[col])
+
+        print(f"Shape of data before dropping nan selected categ columns: {self.data.shape}")
+        self.data = self.data.drop(columns=[col for col in self.data.columns if "_nan" in col], errors="ignore")
+        print(f"Shape of data after dropping nan selected categ columns: {self.data.shape}")
+
+        self.data = self.data.dropna()
+        print(f"Shape of data after dropping all columns having nan values: {self.data.shape}")
 
         print(f"Categorical encoding using {method} completed.")
 
