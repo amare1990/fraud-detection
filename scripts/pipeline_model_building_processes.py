@@ -4,7 +4,8 @@ import pandas as pd
 from scripts.model_training import FraudDetectionModel
 from scripts.tracking_experiment import track_versioning_experiment
 
-df = pd.read_csv("../data/processed_data.csv")
+df = pd.read_csv("/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/data/processed_data.csv")
+print(df.head())
 target_column = 'class'
 train_pipeliner = FraudDetectionModel(df, target_column)
 

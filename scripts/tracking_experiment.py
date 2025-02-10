@@ -1,10 +1,12 @@
 """Tracks versioning, logging of a model."""
 
+import pandas as pd
+
 import mlflow
 
 from scripts.model_training import FraudDetectionModel
 
-df = "../data/processed_data.csv"
+df = pd.read_csv("/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/data/processed_data.csv")
 target_column = 'class'
 train_pipeliner = FraudDetectionModel(df, target_column)
 
