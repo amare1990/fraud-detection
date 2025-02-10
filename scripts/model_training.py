@@ -71,7 +71,7 @@ class FraudDetectionModel:
     def train_sklearn_models(self):
         models = {
             "Logistic Regression": LogisticRegression(),
-            "Support Vector Machine": SVC(),  # Added Support Vector Machine
+            # "Support Vector Machine": SVC(),  # Added Support Vector Machine
             "Decision Tree": DecisionTreeClassifier(),
             "Random Forest": RandomForestClassifier(),
             "Gradient Boosting": GradientBoostingClassifier(),
