@@ -5,8 +5,6 @@ import sys
 
 import pandas as pd
 
-from scripts.model_training import FraudDetectionModel
-from scripts.data_analysis_preprocessing import FraudDataProcessor
 
 # Get the root directory of the project
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -14,6 +12,9 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 # Add it to sys.path
 sys.path.append(ROOT_DIR)
 print(f'Root direc: {ROOT_DIR}')
+
+from scripts.model_training import FraudDetectionModel
+from scripts.data_analysis_preprocessing import FraudDataProcessor
 
 
 if __name__ == '__main__':
