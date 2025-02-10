@@ -1,11 +1,10 @@
 """Peipeline all model building processes."""
+
 import pandas as pd
 
 from scripts.model_training import FraudDetectionModel
-from scripts.tracking_experiment import track_versioning_experiment
 
 df = pd.read_csv("/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/data/processed_data.csv")
-print(df.head())
 target_column = 'class'
 train_pipeliner = FraudDetectionModel(df, target_column)
 
@@ -32,15 +31,15 @@ def pipeline_model_training_processes():
     train_pipeliner.save_model("LSTM")
     train_pipeliner.save_model("CNN")
 
-    track_versioning_experiment(
+    train_pipeliner.track_versioning_experiment(
         "Logistic Regression", accuracy=0.98)
     # trainer.track_versioning_experiment("Support Vector Machine", accuracy=0.98)
-    track_versioning_experiment("Decision Tree", accuracy=0.98)
-    track_versioning_experiment("Random Forest", accuracy=0.98)
-    track_versioning_experiment(
+    train_pipeliner.track_versioning_experiment("Decision Tree", accuracy=0.98)
+    train_pipeliner.track_versioning_experiment("Random Forest", accuracy=0.98)
+    train_pipeliner.track_versioning_experiment(
         "Gradient Boosting", accuracy=0.98)
-    track_versioning_experiment(
+    train_pipeliner.track_versioning_experiment(
         "MLP Classifier", accuracy=0.98)
-    track_versioning_experiment("RNN", accuracy=0.98)
-    track_versioning_experiment("LSTM", accuracy=0.98)
-    track_versioning_experiment("CNN", accuracy=0.98)
+    train_pipeliner.track_versioning_experiment("RNN", accuracy=0.98)
+    train_pipeliner.track_versioning_experiment("LSTM", accuracy=0.98)
+    train_pipeliner.track_versioning_experiment("CNN", accuracy=0.98)

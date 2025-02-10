@@ -302,3 +302,27 @@ class FraudDetectionModel:
                 pickle.dump(model, f)  # Pass the file object 'f' to pickle.dump
 
         print(f'Model {model_name} saved successfuly!')
+
+    def track_versioning_experiment(self, model_name, accuracy, params=None):
+        # Set the experiment (ideally should be done once, not every run)
+        mlflow.set_experiment("Fraud Detection")
+
+        with mlflow.start_run():
+            # Log model name as a parameter
+            mlflow.log_param("Model", model_name)
+            # Log accuracy as a metric
+            mlflow.log_metric("Accuracy", accuracy)
+
+            # Log hyperparameters if provided
+            if params:
+                for key, value in params.items():
+                    mlflow.log_param(key, value)
+
+            # Log model based on type (CNN or LSTM for PyTorch; else for
+            # scikit-learn)
+            if model_name in ['CNN', 'RNN', 'LSTM']:
+                mlflow.pytorch.log_model(self.models[model_name], model_name)
+            else:
+                mlflow.sklearn.log_model(self.models[model_name], model_name)
+
+            print(f"Experiment tracked for {model_name}")
