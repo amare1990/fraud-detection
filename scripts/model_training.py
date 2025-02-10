@@ -89,13 +89,18 @@ class FraudDetectionModel:
             conf_matrix = confusion_matrix(self.y_test, y_pred)
             class_report = classification_report(self.y_test, y_pred)
 
-            print(f"{name} Accuracy: {accuracy:.4f}")
-            print(f"{name} Precision: {precision:.4f}")
-            print(f"{name} Recall: {recall:.4f}")
-            print(f"{name} F1-Score: {f1:.4f}")
-            print(f"{name} Confusion Matrix:")
+            # Print performance metrics
+            print(f"\n{name} Accuracy: {accuracy:.4f}")
+            print(f"\n{name} Precision: {precision:.4f}")
+            print(f"\n{name} Recall: {recall:.4f}")
+            print(f"\n{name} F1-Score: {f1:.4f}")
+
+            print(f"\n{name} Confusion Matrix:")
+            print("-" * 40)
             print(conf_matrix)
-            print(f"{name} class_report:")
+
+            print("-" * 40)
+            print(f"\n{name} class_report:")
             print(class_report)
 
             perf_result[name] = {
@@ -247,12 +252,19 @@ class FraudDetectionModel:
             true_labels_array, predictions_array)
 
         # Print metrics
-        print(f"{model_type} Accuracy: {accuracy:.4f}")
-        print(f"Precision: {precision:.4f}")
-        print(f"Recall: {recall:.4f}")
-        print(f"F1-Score: {f1:.4f}")
-        print("Confusion Matrix:")
+        print(f"\n{model_type} Accuracy: {accuracy:.4f}")
+        print(f"\n {model_type} Precision: {precision:.4f}")
+        print(f"\n {model_type} Recall: {recall:.4f}")
+        print(f"\n {model_type} F1-Score: {f1:.4f}")
+
+        # Print confusion matrix
+        print(f"\n{model_type} - Confusion Matrix:")
+        print("-" * 40)
         print(conf_matrix)
+
+        # Print classification report
+        print(f"\n{model_type} - Classification Report:")
+        print("-" * 40)
         print("Classification Report:")
         print(class_report)
 
@@ -277,7 +289,7 @@ class FraudDetectionModel:
             print(f'Model {model_name} not found!')
             return
 
-        if model_name in ['CNN', 'LSTM']:
+        if model_name in ['CNN', 'RNN', 'LSTM']:
             torch.save(model.state_dict(), f'../models/{model_name}.pth')
         else:
             # Open the file in write binary mode ('wb')
@@ -303,7 +315,7 @@ class FraudDetectionModel:
 
             # Log model based on type (CNN or LSTM for PyTorch; else for
             # scikit-learn)
-            if model_name in ['CNN', 'LSTM']:
+            if model_name in ['CNN', 'RNN', 'LSTM']:
                 mlflow.pytorch.log_model(self.models[model_name], model_name)
             else:
                 mlflow.sklearn.log_model(self.models[model_name], model_name)
