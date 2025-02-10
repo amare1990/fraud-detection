@@ -3,8 +3,6 @@
 import os
 import sys
 
-import pandas as pd
-
 
 # Get the root directory of the project
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -13,8 +11,9 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(ROOT_DIR)
 print(f'Root direc: {ROOT_DIR}')
 
-from scripts.model_training import FraudDetectionModel
+from scripts.pipeline_model_building_processes import pipeline_model_training_processes
 from scripts.data_analysis_preprocessing import FraudDataProcessor
+
 
 
 if __name__ == '__main__':
@@ -26,11 +25,14 @@ if __name__ == '__main__':
     # Run all model building, training and evaluation processes automatically.
     # Load data (in pandas) and assign the 'class' variable to the
     # target_column variable.
-    df = pd.read_csv(
-        '/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/data/processed_data.csv')
-    target_column = "class"
+    # df = pd.read_csv(
+    #     '/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/data/processed_data.csv')
+    # target_column = "class"
 
-    """Pipelining all model building, training and evaluation processes."""
-    fraud_detector = FraudDetectionModel(df, target_column)
+    # """Pipelining all model building, training and evaluation processes."""
+    # fraud_detector = FraudDetectionModel(df, target_column)
 
-    fraud_detector.pipeline_model_training_processes()
+    # fraud_detector.pipeline_model_training_processes()
+
+    # Run the pipleiner
+    pipeline_model_training_processes()
