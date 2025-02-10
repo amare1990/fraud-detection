@@ -5,7 +5,7 @@
 ## Built With
 
 - **Major Language:** Python 3
-- **Libraries:** NumPy, Pandas, Matplotlib, Seaborn, Scikit-learn
+- **Libraries:** NumPy, Pandas, Matplotlib, Seaborn, Scikit-learn, torch
 - **Tools & Technologies:** Jupyter Notebook, Google Colab, Git, GitHub, Gitflow, VS Code
 
 ## Demonstration and Website
@@ -114,11 +114,91 @@ The **data analysis and preprocessing** phase is crucial for ensuring the qualit
 - Converted categorical features into numerical representations.
 
 
+### Model Building
+
+This project implements a fraud detection model using various machine learning and deep learning techniques. The model building process involves data preparation, training, evaluation, and saving the models. Below are the steps taken to build the models:
+
+#### Data Preparation
+
+- The dataset undergoes preprocessing before training:
+
+- Excludes irrelevant columns such as device_id, signup_time, purchase_time, and IP-related fields.
+
+- Splits data into training and testing sets using an 80-20 ratio with train_test_split.
+
+#### Training Traditional Machine Learning Models
+
+- Several machine learning models are trained using scikit-learn:
+
+- > Logistic Regression
+
+      Decision Tree Classifier
+
+      Random Forest Classifier
+
+      Gradient Boosting Classifier
+
+      MLP Classifier (Neural Network with one hidden layer)
+
+- For each model, the following evaluation metrics are computed:
+
+- > Accuracy
+
+      Precision
+
+      Recall
+
+      F1-score
+
+      Confusion Matrix
+
+      Classification Report
+
+#### Training Deep Learning Models
+
+- The deep learning models are implemented using PyTorch and include:
+
+- > CNN (Convolutional Neural Network)
+
+   RNN (Recurrent Neural Network)
+
+   LSTM (Long Short-Term Memory Network)
+
+- Each model is trained using:
+
+- > Binary Cross-Entropy Loss (BCELoss) as the loss function.
+
+   Adam Optimizer with a default learning rate of 0.001.
+
+   Mini-batch training with a batch size of 32.
+
+   10 epochs (configurable).
+
+- Performance metrics similar to traditional models are computed after training. Additionally, training loss curves are plotted and saved.
+
+#### Model Saving
+
+- The trained models are stored for future use:
+
+- Traditional models are saved using pickle.
+
+- Deep learning models (CNN, RNN, LSTM) are saved using torch.save() in .pth format.
+
+- This structured approach ensures efficient training and evaluation of both machine learning and deep learning models for fraud detection.
+
+#### Tracking and Experimenting With `mflow`
+
+- Setting Up MLflow: `pip install mlflow`.
+- Tracking Experiments – Logging parameters, metrics, and models.
+- Running the MLflow UI – Viewing experiment results.
+- Integration with Your Code – Adding MLflow to your existing training pipeline
+
+
+
 ### Feature Works
 
 The next steps involve building an end-to-end fraud detection pipeline:
 
-- **Model Building and Training** – Train and evaluate ML/DL models (CNN, LSTM, and traditional ML classifiers).
 - **Model Explainability** – Use SHAP, LIME, and feature importance analysis to interpret model decisions.
 - **Model Deployment and API Development** – Deploy the trained model using Flask and FastAPI for real-time fraud detection.
 - **Build a Dashboard with Flask and Dash** – Develop an interactive web-based dashboard for visualizing fraud detection insights.
@@ -128,7 +208,7 @@ The next steps involve building an end-to-end fraud detection pipeline:
 
 
 ### More information
-- You can refer to [this link]() to gain more insights about the reports of this project results.
+- You can refer to [this link](https://drive.google.com/file/d/1aZKOSMJHP8vytMt3DrpnHAZAGm5A15Xp/view) to gain more insights about the reports of this project results.
 
 ## Authors
 
