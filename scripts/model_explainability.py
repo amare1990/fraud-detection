@@ -4,6 +4,8 @@ import shap
 import lime
 import lime.lime_tabular
 
+import matplotlib.pyplot as plt
+
 
 class ModelExplainability:
     def __init__(self, model, X_train, X_test, feature_names):
@@ -19,7 +21,7 @@ class ModelExplainability:
         self.X_test = X_test
         self.feature_names = feature_names
 
-    ### SHAP EXPLAINABILITY ###
+    # SHAP EXPLAINABILITY
     def shap_explain(self):
         """
         Explain the model using SHAP values.
@@ -40,3 +42,27 @@ class ModelExplainability:
         # Dependence Plot: Shows how a single feature affects predictions
         feature_index = 0
         shap.dependence_plot(feature_index, shap_values, self.X_test, feature_names=self.feature_names)
+
+    # LIME EXPLAINABILITY
+    def lime_explain(self, sample_index=0):
+        """
+        Explain a model's prediction using LIME.
+        :param sample_idx: Index of the sample to explain.
+        """
+        print("Generating LIME explanations...")
+
+        explainer = lime.lime_tabular.LimeTabularExplainer(
+            self.X_train.to_numpy(),
+            feature_names=self.feature_names,
+            class_names=[0, 1],
+            mode="classification"
+        )
+
+        # Explain a single instance
+        sample = self.X_test.iloc[sample_index].to_numpy()
+        exp = explainer.explain_instance(sample, self.model.predict_proba, num_features=10)
+
+        # Show feature importance
+        exp.show_in_notebook()
+        exp.as_pyplot_figure()
+        plt.show()
