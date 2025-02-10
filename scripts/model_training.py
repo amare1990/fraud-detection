@@ -326,36 +326,3 @@ class FraudDetectionModel:
                 mlflow.sklearn.log_model(self.models[model_name], model_name)
 
             print(f"Experiment tracked for {model_name}")
-
-
-    def pipeline_model_training_processes(self):
-        """Run all model building, training and evaluation processes methods."""
-        # trainer = FraudDetectionModel(df, target_column)
-
-        self.data_preparation()
-        perf_result = self.train_sklearn_models()
-
-        self.train_deep_learning_models(model_type="RNN", epochs=10)
-        self.train_deep_learning_models(model_type="LSTM", epochs=10)
-        self.train_deep_learning_models(model_type="CNN", epochs=10)
-
-        self.save_model("Logistic Regression")
-        # trainer.save_model("Support Vector Machine")
-        self.save_model("Decision Tree")
-        self.save_model("Random Forest")
-        self.save_model("Gradient Boosting")
-        self.save_model("MLP Classifier")
-
-        self.save_model("RNN")
-        self.save_model("LSTM")
-        self.save_model("CNN")
-
-        self.track_versioning_experiment("Logistic Regression", accuracy=0.98)
-        # trainer.track_versioning_experiment("Support Vector Machine", accuracy=0.98)
-        self.track_versioning_experiment("Decision Tree", accuracy=0.98)
-        self.track_versioning_experiment("Random Forest", accuracy=0.98)
-        self.track_versioning_experiment("Gradient Boosting", accuracy=0.98)
-        self.track_versioning_experiment("MLP Classifier", accuracy=0.98)
-        self.track_versioning_experiment("RNN", accuracy=0.98)
-        self.track_versioning_experiment("LSTM", accuracy=0.98)
-        self.track_versioning_experiment("CNN", accuracy=0.98)
