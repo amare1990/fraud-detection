@@ -208,7 +208,7 @@ class FraudDetectionModel:
         plt.grid()
 
         # Save the loss plot
-        loss_plot_path = f"../notebooks/plots/{model_type}_training_loss.png"
+        loss_plot_path = f"/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/{model_type}_training_loss.png"
         plt.savefig(loss_plot_path)
         print(f"Loss plot saved as {loss_plot_path}")
 
@@ -295,10 +295,10 @@ class FraudDetectionModel:
             return
 
         if model_name in ['CNN', 'RNN', 'LSTM']:
-            torch.save(model.state_dict(), f'../models/{model_name}.pth')
+            torch.save(model.state_dict(), f"/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/models/{model_name}.pth")
         else:
             # Open the file in write binary mode ('wb')
-            with open(f'../models/{model_name}.pkl', 'wb') as f:
+            with open(f"/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/models/{model_name}.pkl", 'wb') as f:
                 pickle.dump(model, f)  # Pass the file object 'f' to pickle.dump
 
         print(f'Model {model_name} saved successfuly!')
