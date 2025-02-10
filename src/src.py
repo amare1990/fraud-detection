@@ -19,8 +19,8 @@ from scripts.data_analysis_preprocessing import FraudDataProcessor
 if __name__ == '__main__':
 
     # Pipelining all data cleaning and preprocessing processes.
-    fraud_detector = FraudDataProcessor()
-    fraud_detector.analysis_preprocess()
+    # fraud_detector = FraudDataProcessor()
+    # fraud_detector.analysis_preprocess()
 
     # Run all model building, training and evaluation processes automatically.
     # Load data (in pandas) and assign the 'class' variable to the
