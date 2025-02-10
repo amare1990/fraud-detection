@@ -39,9 +39,11 @@ class FraudDetectionModel:
     """A machine learning model using PyTorch."""
     def __init__(self, data, target_column):
         """Initialize the class with data, target_column."""
-        self.data = data
-        self.target_column = target_column
-        self.models = {}
+        excluded_columns = ['device_id', 'signup_time', 'purchase_time', 'ip_int',
+                            'lower_bound_ip_address', 'upper_bound_ip_address',
+                            'lower_bound_ip_int', 'upper_bound_ip_int']
+
+        self.data = data.drop(columns=excluded_columns, errors='ignore')
 
         # Initialize dataset attributes
         self.X_train = None
@@ -323,7 +325,7 @@ class FraudDetectionModel:
             print(f"Experiment tracked for {model_name}")
 
 
-    def pipeline_model_training_processes(self, data, target_column):
+    def pipeline_model_training_processes(self):
         """Run all model building, training and evaluation processes methods."""
         # trainer = FraudDetectionModel(df, target_column)
 
