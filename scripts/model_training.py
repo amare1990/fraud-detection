@@ -45,6 +45,9 @@ class FraudDetectionModel:
 
         self.data = data.drop(columns=excluded_columns, errors='ignore')
 
+        self.target_column = target_column
+        self.models = {}
+
         # Initialize dataset attributes
         self.X_train = None
         self.X_test = None
