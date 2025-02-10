@@ -116,83 +116,96 @@ The **data analysis and preprocessing** phase is crucial for ensuring the qualit
 
 ### Model Building
 
-This project implements a fraud detection model using various machine learning and deep learning techniques. The model building process involves data preparation, training, evaluation, and saving the models. Below are the steps taken to build the models:
+This project implements a fraud detection model using both traditional machine learning and deep learning techniques. The model-building process consists of data preparation, training, evaluation, and model storage.
+The core functionality of model building, training, evaluation, saving and tracking experiments are implemented in the `scripts/model_training.py` script. To pipeline all processes of model building, training, evaluation, savining and tracking the model experiments with `mlflow`,`pipeline_model_building_processes.py` script is implemented and run to view results. Below is a detailed breakdown of each step:
 
-#### Data Preparation
+#### 1. Data Preparation
 
-- The dataset undergoes preprocessing before training:
+- Before training, the dataset undergoes preprocessing to enhance model performance:
 
-- Excludes irrelevant columns such as device_id, signup_time, purchase_time, and IP-related fields.
+- Feature Selection: Irrelevant columns such as device_id, signup_time, purchase_time, and IP-related fields are excluded.
 
-- Splits data into training and testing sets using an 80-20 ratio with train_test_split.
+- Data Splitting: The dataset is divided into training (80%) and testing (20%) sets using train_test_split from scikit-learn.
 
-#### Training Traditional Machine Learning Models
+#### 2. Training Traditional Machine Learning Models
 
 - Several machine learning models are trained using scikit-learn:
 
-- > Logistic Regression
+   - Logistic Regression
 
-      Decision Tree Classifier
+   - Decision Tree Classifier
 
-      Random Forest Classifier
+   - Random Forest Classifier
 
-      Gradient Boosting Classifier
+   - Gradient Boosting Classifier
 
-      MLP Classifier (Neural Network with one hidden layer)
+   - MLP Classifier (Neural Network with one hidden layer)
 
-- For each model, the following evaluation metrics are computed:
+- Each model is trained and evaluated based on the following metrics:
 
-- > Accuracy
+   - Accuracy
 
-      Precision
+   - Precision
 
-      Recall
+   - Recall
 
-      F1-score
+   - F1-score
 
-      Confusion Matrix
+   - Confusion Matrix
 
-      Classification Report
+   - Classification Report
 
-#### Training Deep Learning Models
+#### 3. Training Deep Learning Models
 
-- The deep learning models are implemented using PyTorch and include:
+- The deep learning models are implemented using PyTorch, leveraging their strengths for sequential and pattern-based fraud detection. The models include:
 
-- > CNN (Convolutional Neural Network)
+   - CNN (Convolutional Neural Network) – Captures spatial relationships in data.
 
-   RNN (Recurrent Neural Network)
+   - RNN (Recurrent Neural Network) – Effective for sequence-based fraud patterns.
 
-   LSTM (Long Short-Term Memory Network)
+   - LSTM (Long Short-Term Memory Network) – Handles long-term dependencies in sequential data.
 
-- Each model is trained using:
+- Training Configuration:
 
-- > Binary Cross-Entropy Loss (BCELoss) as the loss function.
+   - Loss Function: Binary Cross-Entropy Loss (BCELoss)
 
-   Adam Optimizer with a default learning rate of 0.001.
+   - Optimizer: Adam optimizer with a default learning rate of 0.001
 
-   Mini-batch training with a batch size of 32.
+   - Batch Size: 32 (configurable)
 
-   10 epochs (configurable).
+   - Epochs: 10 (adjustable as needed)
 
-- Performance metrics similar to traditional models are computed after training. Additionally, training loss curves are plotted and saved.
+- After training, performance metrics similar to those used in traditional models are computed. Additionally, training loss curves are plotted and saved to assess model convergence.
 
-#### Model Saving
+#### 4. Model Saving and Storage
 
-- The trained models are stored for future use:
+   - Trained models are saved for future inference and evaluation:
 
-- Traditional models are saved using pickle.
+   - Traditional Models: Stored using pickle.
 
-- Deep learning models (CNN, RNN, LSTM) are saved using torch.save() in .pth format.
+   - Deep Learning Models: Saved using torch.save() in .pth format.
 
-- This structured approach ensures efficient training and evaluation of both machine learning and deep learning models for fraud detection.
+#### 5. Experiment Tracking with MLflow
 
-#### Tracking and Experimenting With `mflow`
+- To track model performance and parameter tuning, MLflow is integrated into the workflow:
 
-- Setting Up MLflow: `pip install mlflow`.
-- Tracking Experiments – Logging parameters, metrics, and models.
-- Running the MLflow UI – Viewing experiment results.
-- Integration with Your Code – Adding MLflow to your existing training pipeline
+- Setting Up MLflow:
 
+   - pip install mlflow
+
+- Tracking Experiments:
+
+   - Log hyperparameters, metrics, and model versions.
+
+   - Store training history and visualization plots.
+
+- Running the MLflow UI:
+
+   - mlflow ui
+
+   - Allows visualization of model performance over multiple experiments.
+
+- This structured approach ensures systematic training, evaluation, and tracking for both traditional and deep learning models in fraud detection.
 
 
 ### Feature Works
