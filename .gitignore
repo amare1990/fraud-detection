@@ -37,5 +37,18 @@ yolov5/
 detection_log.log
 notebooks/detection_log.log
 
-# Ignore large model files
+
+# Ignore MLflow logs & artifacts
+mlruns/
+mlflow-artifacts/
+
+# Ignore saved models
+*.h5
 *.pt
+*.pkl
+models/
+checkpoints/
+
+# Ignore logs & cache
+logs/
+__pycache__/
