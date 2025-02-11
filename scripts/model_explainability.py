@@ -27,36 +27,65 @@ class ModelExplainability:
         Explain the model using SHAP values.
         """
         print("Generating SHAP explanations...")
-        # Use SHAP KernelExplainer for black-box models
-        explainer = shap.Explainer(self.model.predict, self.X_train)
-        shap_values = explainer(self.X_test)
+        # Use SHAP KernelExplainer for black-box models, TreeExplainer for tree models
+        # explainer = shap.Explainer(self.model.predict, self.X_train)
+
+        # If your model is tree-based (like Decision Tree, Random Forest):
+        # explainer = shap.TreeExplainer(self.model) #, data=self.X_train)
+        explainer = shap.KernelExplainer(
+            self.model.predict_proba, self.X_train)
+        # , check_additivity=False)  # Try commenting out this line
+        shap_values = explainer.shap_values(self.X_test)
+
+        # Expected value is computed during initialization of KernelExplainer,
+        # or for TreeExplainer it's calculated when shap_values is called
+        expected_value = explainer.expected_value
 
         # Summary Plot: Shows global feature importance
-        shap.summary_plot(shap_values, self.X_test, feature_names=self.feature_names)
+        shap.summary_plot(
+            shap_values,
+            self.X_test,
+            feature_names=self.feature_names)
 
         # Force Plot: Visualizes individual predictions
         shap.initjs()
         sample_index = 0
-        shap.force_plot(explainer.expected_value, shap_values[sample_index], self.X_test.iloc[sample_index, :]\
-                        , feature_names=self.feature_names)
+
+        # Generate SHAP force plot
+        force_plot = shap.force_plot(expected_value[1], shap_values[1][sample_index], self.X_test.iloc[sample_index, :],
+                                     feature_names=self.feature_names)
 
         # Save force plot as an image
-        shap.save_html("/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/explainability/shap_force_plot.html", force_plot)  # Save as HTML
+        shap.save_html(
+            "/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/explainability/shap_force_plot.html",
+            force_plot)  # Save as HTML
+
         # Dependence Plot: Shows how a single feature affects predictions
         feature_index = 0
-        shap.dependence_plot(feature_index, shap_values[1], self.X_test, feature_names=self.feature_names)
+        shap.dependence_plot(
+            feature_index,
+            shap_values[1],
+            self.X_test,
+            feature_names=self.feature_names)
+
         # Save dependence plot as PNG
-        plt.savefig("/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/explainability/shap_dependence_plot.png", dpi=300, bbox_inches="tight")
+        plt.savefig(
+            "/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/explainability/shap_dependence_plot.png",
+            dpi=300,
+            bbox_inches="tight")
 
         # Save as PDF (optional)
-        plt.savefig("/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/explainability/shap_dependence_plot.pdf", dpi=300, bbox_inches="tight")
+        plt.savefig(
+            "/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/explainability/shap_dependence_plot.pdf",
+            dpi=300,
+            bbox_inches="tight")
 
         # Show and close the plot
         plt.show()
         plt.close()
 
-
     # LIME EXPLAINABILITY
+
     def lime_explain(self, sample_index=0):
         """
         Explain a model's prediction using LIME.
@@ -73,10 +102,14 @@ class ModelExplainability:
 
         # Explain a single instance
         sample = self.X_test.iloc[sample_index].to_numpy()
-        exp = explainer.explain_instance(sample, self.model.predict_proba, num_features=10)
+        exp = explainer.explain_instance(
+            sample, self.model.predict_proba, num_features=10)
 
         # Show feature importance
         exp.show_in_notebook()
         exp.as_pyplot_figure()
-        plt.savefig(f"/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/explainability/lime_explanations.png", dpi=300, bbox_inches="tight")
+        plt.savefig(
+            f"/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/explainability/lime_explanations.png",
+            dpi=300,
+            bbox_inches="tight")
         plt.show()
