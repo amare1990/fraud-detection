@@ -17,6 +17,10 @@ from scripts.data_analysis_preprocessing import FraudDataProcessor
 from scripts.model_explainer import pipeline_model_explainability
 
 
+# Ignore warnings
+import warnings
+warnings.filterwarnings('ignore')
+
 if __name__ == '__main__':
 
     # Pipelining all data cleaning and preprocessing processes.
