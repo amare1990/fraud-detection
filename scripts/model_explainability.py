@@ -39,9 +39,22 @@ class ModelExplainability:
         sample_index = 0
         shap.force_plot(explainer.expected_value, shap_values[sample_index], self.X_test.iloc[sample_index, :]\
                         , feature_names=self.feature_names)
+
+        # Save force plot as an image
+        shap.save_html("/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/explainability/shap_force_plot.html", force_plot)  # Save as HTML
         # Dependence Plot: Shows how a single feature affects predictions
         feature_index = 0
-        shap.dependence_plot(feature_index, shap_values, self.X_test, feature_names=self.feature_names)
+        shap.dependence_plot(feature_index, shap_values[1], self.X_test, feature_names=self.feature_names)
+        # Save dependence plot as PNG
+        plt.savefig("/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/explainability/shap_dependence_plot.png", dpi=300, bbox_inches="tight")
+
+        # Save as PDF (optional)
+        plt.savefig("/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/explainability/shap_dependence_plot.pdf", dpi=300, bbox_inches="tight")
+
+        # Show and close the plot
+        plt.show()
+        plt.close()
+
 
     # LIME EXPLAINABILITY
     def lime_explain(self, sample_index=0):
@@ -65,4 +78,5 @@ class ModelExplainability:
         # Show feature importance
         exp.show_in_notebook()
         exp.as_pyplot_figure()
+        plt.savefig(f"/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/explainability/lime_explanations.png", dpi=300, bbox_inches="tight")
         plt.show()
