@@ -14,6 +14,7 @@ print(f'Root direc: {ROOT_DIR}')
 from scripts.pipeline_model_building_processes import pipeline_model_training_processes
 from scripts.data_analysis_preprocessing import FraudDataProcessor
 
+from scripts.model_explainer import pipeline_model_explainability
 
 
 if __name__ == '__main__':
@@ -27,3 +28,7 @@ if __name__ == '__main__':
     # Pipelining all model building, training and evaluation processes.
     # Run the pipleiner
     pipeline_model_training_processes()
+
+    # Run the model explainability pipeliner
+    # Call the method
+    pipeline_model_explainability()
