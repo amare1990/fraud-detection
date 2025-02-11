@@ -208,11 +208,148 @@ The core functionality of model building, training, evaluation, saving and track
 - This structured approach ensures systematic training, evaluation, and tracking for both traditional and deep learning models in fraud detection.
 
 
+### Model Explainability
+
+
+This module provides explainability tools for machine learning models using SHAP (SHapley Additive exPlanations) and LIME (Local Interpretable Model-agnostic Explanations). It supports a variety of models, including traditional machine learning models (like Logistic Regression, Decision Trees, Random Forests, and Gradient Boosting) and deep learning models (such as MLP, CNN, LSTM, and RNN). This allows users to interpret model predictions and understand feature contributions.
+
+## Features
+
+- **SHAP Explainer**: SHAP values provide a unified measure of feature importance and contribution to model predictions.
+  - Summary plots for feature importance.
+  - Force plots for individual instance prediction explanations.
+  - Dependence plots to show how feature values affect predictions.
+
+- **LIME Explainer**: LIME provides local explanations for individual predictions, helping users interpret black-box models.
+  - Generates visual plots for feature importance for each instance.
+
+## Installation
+
+Before using this module, make sure you have the following Python libraries installed:
+
+```bash
+pip install shap lime
+```
+
+## Class: `ModelExplainability`
+
+### Overview
+The `ModelExplainability` class provides methods to generate explainability plots using SHAP and LIME for a variety of machine learning models. It handles both traditional ML models and deep learning models, utilizing SHAP and LIME's power to explain model predictions.
+
+### Methods
+
+#### `__init__(self, model, X_train, X_test, feature_names, base_dir)`
+Initializes the explainability module with the provided model and dataset.
+
+- **model**: Trained ML model (can be scikit-learn or deep learning model).
+- **X_train**: Training data used for explainability.
+- **X_test**: Test data for model prediction and explanation.
+- **feature_names**: List of feature names.
+- **base_dir**: Base directory for saving generated plots.
+
+#### `shap_explain(self, sample_index=0, feature_index=0)`
+Generates SHAP explanations for the provided model and dataset.
+
+- **sample_index**: Index of the sample in the test set to generate individual SHAP explanations.
+- **feature_index**: Index of the feature for the SHAP dependence plot.
+
+Generates the following SHAP visualizations:
+- **Summary plot**: Visualizes feature importance across all samples.
+- **Force plot**: Provides an individual explanation for a specific sample's prediction.
+- **Dependence plot**: Shows the effect of a specific feature on the model's output.
+
+#### `lime_explain(self, sample_index=0, num_features=10)`
+Generates a LIME explanation for a specific test sample.
+
+- **sample_index**: Index of the sample to generate LIME explanation.
+- **num_features**: Number of features to include in the LIME explanation.
+
+Generates the following LIME visualizations:
+- **Explanation plot**: Shows how the features of the sample contribute to the model's prediction.
+
+## Example Usage
+
+```python
+import pickle
+import pandas as pd
+import torch
+from model_explainability import ModelExplainability
+
+# Load dataset
+df = pd.read_csv("path/to/your/data.csv")
+X = df.drop(columns=["target"])
+X_train, X_test = X.iloc[:int(0.8 * len(X))], X.iloc[int(0.8 * len(X)):]
+feature_names = X_train.columns.tolist()
+
+# Load trained model
+with open("path/to/your/model.pkl", 'rb') as f:
+    model = pickle.load(f)
+
+# Initialize explainability
+explainer = ModelExplainability(model, X_train, X_test, feature_names, "path/to/save/plots")
+
+# SHAP Analysis
+explainer.shap_explain(sample_index=5)
+
+# LIME Analysis
+explainer.lime_explain(sample_index=5)
+```
+
+---
+
+## Pipeline: `pipeline_model_explainability`
+
+### Overview
+The `pipeline_model_explainability` function automates the process of loading models, datasets, and generating SHAP/LIME explanations for multiple models.
+
+### Steps:
+1. **Load Models**: Loads different models from specified file paths, including Logistic Regression, Decision Trees, Random Forest, Gradient Boosting, MLP, CNN, LSTM, and RNN.
+2. **Load Dataset**: Reads the dataset and prepares it by dropping unnecessary columns and splitting it into training and testing sets.
+3. **Explainability**: For each model, the pipeline initializes the `ModelExplainability` class and runs both SHAP and LIME explainability methods.
+
+### Example Usage
+
+```python
+from model_explainability_pipeline import pipeline_model_explainability
+
+# Run the model explainability pipeline
+pipeline_model_explainability()
+```
+
+### Required Files:
+1. **Models**: Ensure that your models are saved in `.pkl` format (for traditional ML models) or `.pth` format (for deep learning models like CNN, LSTM, RNN).
+2. **Dataset**: The dataset should be in `.csv` format, with the target column labeled as `"class"` and the unnecessary columns dropped as required.
+
+---
+
+## Folder Structure
+
+```bash
+your_project/
+├── scripts/
+│   ├── model_explainability.py   # Contains the ModelExplainability class
+│   └── model_explainability_pipeline.py   # Contains the pipeline function
+├── data/
+│   └── processed_data.csv  # Your dataset
+├── models/  # Folder where the models are stored
+│   ├── Logistic Regression.pkl
+│   ├── Decision Tree.pkl
+│   ├── Random Forest.pkl
+│   ├── Gradient Boosting.pkl
+│   ├── MLP.pkl
+│   ├── CNN.pth
+│   ├── LSTM.pth
+│   └── RNN.pth
+└── notebooks/
+    └── explainability_plots/  # Folder where SHAP and LIME plots are saved
+```
+
+---
+
+
 ### Feature Works
 
 The next steps involve building an end-to-end fraud detection pipeline:
-
-- **Model Explainability** – Use SHAP, LIME, and feature importance analysis to interpret model decisions.
 - **Model Deployment and API Development** – Deploy the trained model using Flask and FastAPI for real-time fraud detection.
 - **Build a Dashboard with Flask and Dash** – Develop an interactive web-based dashboard for visualizing fraud detection insights.
 
