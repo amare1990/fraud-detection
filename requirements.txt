@@ -47,6 +47,7 @@ h11==0.14.0
 httpcore==1.0.7
 httpx==0.28.1
 idna==3.10
+imageio==2.35.1
 importlib_metadata==8.5.0
 importlib_resources==6.4.5
 ipykernel==6.29.5
@@ -69,6 +70,9 @@ jupyterlab==4.3.5
 jupyterlab_pygments==0.3.0
 jupyterlab_server==2.27.3
 kiwisolver==1.4.7
+lazy_loader==0.4
+lime==0.2.0.1
+llvmlite==0.41.1
 Mako==1.3.9
 Markdown==3.7
 MarkupSafe==2.1.5
@@ -86,6 +90,7 @@ nest-asyncio==1.6.0
 networkx==3.1
 notebook==7.3.2
 notebook_shim==0.2.4
+numba==0.58.1
 numpy==1.24.4
 nvidia-cublas-cu12==12.1.3.1
 nvidia-cuda-cupti-cu12==12.1.105
@@ -129,6 +134,7 @@ pyparsing==3.1.4
 python-dateutil==2.9.0.post0
 python-json-logger==3.2.1
 pytz==2025.1
+PyWavelets==1.4.1
 PyYAML==6.0.2
 pyzmq==26.2.1
 referencing==0.35.1
@@ -137,11 +143,14 @@ rfc3339-validator==0.1.4
 rfc3986-validator==0.1.1
 rpds-py==0.20.1
 rsa==4.9
+scikit-image==0.21.0
 scikit-learn==1.3.2
 scipy==1.10.1
 seaborn==0.13.2
 Send2Trash==1.8.3
+shap==0.44.1
 six==1.17.0
+slicer==0.0.7
 smmap==5.0.2
 sniffio==1.3.1
 soupsieve==2.6
@@ -151,6 +160,7 @@ stack-data==0.6.3
 sympy==1.13.3
 terminado==0.18.1
 threadpoolctl==3.5.0
+tifffile==2023.7.10
 tinycss2==1.2.1
 tomli==2.2.1
 tomlkit==0.13.2
@@ -158,6 +168,7 @@ torch==2.4.1
 torchaudio==2.4.1
 torchvision==0.19.1
 tornado==6.4.2
+tqdm==4.67.1
 traitlets==5.14.3
 triton==3.0.0
 typing_extensions==4.12.2

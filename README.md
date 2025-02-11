@@ -116,90 +116,240 @@ The **data analysis and preprocessing** phase is crucial for ensuring the qualit
 
 ### Model Building
 
-This project implements a fraud detection model using various machine learning and deep learning techniques. The model building process involves data preparation, training, evaluation, and saving the models. Below are the steps taken to build the models:
+This project implements a fraud detection model using both traditional machine learning and deep learning techniques. The model-building process consists of data preparation, training, evaluation, and model storage.
+The core functionality of model building, training, evaluation, saving and tracking experiments are implemented in the `scripts/model_training.py` script. To pipeline all processes of model building, training, evaluation, savining and tracking the model experiments with `mlflow`,`pipeline_model_building_processes.py` script is implemented and run to view results. Below is a detailed breakdown of each step:
 
-#### Data Preparation
+#### 1. Data Preparation
 
-- The dataset undergoes preprocessing before training:
+- Before training, the dataset undergoes preprocessing to enhance model performance:
 
-- Excludes irrelevant columns such as device_id, signup_time, purchase_time, and IP-related fields.
+- Feature Selection: Irrelevant columns such as device_id, signup_time, purchase_time, and IP-related fields are excluded.
 
-- Splits data into training and testing sets using an 80-20 ratio with train_test_split.
+- Data Splitting: The dataset is divided into training (80%) and testing (20%) sets using train_test_split from scikit-learn.
 
-#### Training Traditional Machine Learning Models
+#### 2. Training Traditional Machine Learning Models
 
 - Several machine learning models are trained using scikit-learn:
 
-- > Logistic Regression
+   - Logistic Regression
 
-      Decision Tree Classifier
+   - Decision Tree Classifier
 
-      Random Forest Classifier
+   - Random Forest Classifier
 
-      Gradient Boosting Classifier
+   - Gradient Boosting Classifier
 
-      MLP Classifier (Neural Network with one hidden layer)
+   - MLP Classifier (Neural Network with one hidden layer)
 
-- For each model, the following evaluation metrics are computed:
+- Each model is trained and evaluated based on the following metrics:
 
-- > Accuracy
+   - Accuracy
 
-      Precision
+   - Precision
 
-      Recall
+   - Recall
 
-      F1-score
+   - F1-score
 
-      Confusion Matrix
+   - Confusion Matrix
 
-      Classification Report
+   - Classification Report
 
-#### Training Deep Learning Models
+#### 3. Training Deep Learning Models
 
-- The deep learning models are implemented using PyTorch and include:
+- The deep learning models are implemented using PyTorch, leveraging their strengths for sequential and pattern-based fraud detection. The models include:
 
-- > CNN (Convolutional Neural Network)
+   - CNN (Convolutional Neural Network) – Captures spatial relationships in data.
 
-   RNN (Recurrent Neural Network)
+   - RNN (Recurrent Neural Network) – Effective for sequence-based fraud patterns.
 
-   LSTM (Long Short-Term Memory Network)
+   - LSTM (Long Short-Term Memory Network) – Handles long-term dependencies in sequential data.
 
-- Each model is trained using:
+- Training Configuration:
 
-- > Binary Cross-Entropy Loss (BCELoss) as the loss function.
+   - Loss Function: Binary Cross-Entropy Loss (BCELoss)
 
-   Adam Optimizer with a default learning rate of 0.001.
+   - Optimizer: Adam optimizer with a default learning rate of 0.001
 
-   Mini-batch training with a batch size of 32.
+   - Batch Size: 32 (configurable)
 
-   10 epochs (configurable).
+   - Epochs: 10 (adjustable as needed)
 
-- Performance metrics similar to traditional models are computed after training. Additionally, training loss curves are plotted and saved.
+- After training, performance metrics similar to those used in traditional models are computed. Additionally, training loss curves are plotted and saved to assess model convergence.
 
-#### Model Saving
+#### 4. Model Saving and Storage
 
-- The trained models are stored for future use:
+   - Trained models are saved for future inference and evaluation:
 
-- Traditional models are saved using pickle.
+   - Traditional Models: Stored using pickle.
 
-- Deep learning models (CNN, RNN, LSTM) are saved using torch.save() in .pth format.
+   - Deep Learning Models: Saved using torch.save() in .pth format.
 
-- This structured approach ensures efficient training and evaluation of both machine learning and deep learning models for fraud detection.
+#### 5. Experiment Tracking with MLflow
 
-#### Tracking and Experimenting With `mflow`
+- To track model performance and parameter tuning, MLflow is integrated into the workflow:
 
-- Setting Up MLflow: `pip install mlflow`.
-- Tracking Experiments – Logging parameters, metrics, and models.
-- Running the MLflow UI – Viewing experiment results.
-- Integration with Your Code – Adding MLflow to your existing training pipeline
+- Setting Up MLflow:
 
+   - pip install mlflow
+
+- Tracking Experiments:
+
+   - Log hyperparameters, metrics, and model versions.
+
+   - Store training history and visualization plots.
+
+- Running the MLflow UI:
+
+   - mlflow ui
+
+   - Allows visualization of model performance over multiple experiments.
+
+- This structured approach ensures systematic training, evaluation, and tracking for both traditional and deep learning models in fraud detection.
+
+
+### Model Explainability
+
+
+This module provides explainability tools for machine learning models using SHAP (SHapley Additive exPlanations) and LIME (Local Interpretable Model-agnostic Explanations). It supports a variety of models, including traditional machine learning models (like Logistic Regression, Decision Trees, Random Forests, and Gradient Boosting) and deep learning models (such as MLP, CNN, LSTM, and RNN). This allows users to interpret model predictions and understand feature contributions.
+
+## Features
+
+- **SHAP Explainer**: SHAP values provide a unified measure of feature importance and contribution to model predictions.
+  - Summary plots for feature importance.
+  - Force plots for individual instance prediction explanations.
+  - Dependence plots to show how feature values affect predictions.
+
+- **LIME Explainer**: LIME provides local explanations for individual predictions, helping users interpret black-box models.
+  - Generates visual plots for feature importance for each instance.
+
+## Installation
+
+Before using this module, make sure you have the following Python libraries installed:
+
+```bash
+pip install shap lime
+```
+
+## Class: `ModelExplainability`
+
+### Overview
+The `ModelExplainability` class provides methods to generate explainability plots using SHAP and LIME for a variety of machine learning models. It handles both traditional ML models and deep learning models, utilizing SHAP and LIME's power to explain model predictions.
+
+### Methods
+
+#### `__init__(self, model, X_train, X_test, feature_names, base_dir)`
+Initializes the explainability module with the provided model and dataset.
+
+- **model**: Trained ML model (can be scikit-learn or deep learning model).
+- **X_train**: Training data used for explainability.
+- **X_test**: Test data for model prediction and explanation.
+- **feature_names**: List of feature names.
+- **base_dir**: Base directory for saving generated plots.
+
+#### `shap_explain(self, sample_index=0, feature_index=0)`
+Generates SHAP explanations for the provided model and dataset.
+
+- **sample_index**: Index of the sample in the test set to generate individual SHAP explanations.
+- **feature_index**: Index of the feature for the SHAP dependence plot.
+
+Generates the following SHAP visualizations:
+- **Summary plot**: Visualizes feature importance across all samples.
+- **Force plot**: Provides an individual explanation for a specific sample's prediction.
+- **Dependence plot**: Shows the effect of a specific feature on the model's output.
+
+#### `lime_explain(self, sample_index=0, num_features=10)`
+Generates a LIME explanation for a specific test sample.
+
+- **sample_index**: Index of the sample to generate LIME explanation.
+- **num_features**: Number of features to include in the LIME explanation.
+
+Generates the following LIME visualizations:
+- **Explanation plot**: Shows how the features of the sample contribute to the model's prediction.
+
+## Example Usage
+
+```python
+import pickle
+import pandas as pd
+import torch
+from model_explainability import ModelExplainability
+
+# Load dataset
+df = pd.read_csv("path/to/your/data.csv")
+X = df.drop(columns=["target"])
+X_train, X_test = X.iloc[:int(0.8 * len(X))], X.iloc[int(0.8 * len(X)):]
+feature_names = X_train.columns.tolist()
+
+# Load trained model
+with open("path/to/your/model.pkl", 'rb') as f:
+    model = pickle.load(f)
+
+# Initialize explainability
+explainer = ModelExplainability(model, X_train, X_test, feature_names, "path/to/save/plots")
+
+# SHAP Analysis
+explainer.shap_explain(sample_index=5)
+
+# LIME Analysis
+explainer.lime_explain(sample_index=5)
+```
+
+---
+
+## Pipeline: `pipeline_model_explainability`
+
+### Overview
+The `pipeline_model_explainability` function automates the process of loading models, datasets, and generating SHAP/LIME explanations for multiple models.
+
+### Steps:
+1. **Load Models**: Loads different models from specified file paths, including Logistic Regression, Decision Trees, Random Forest, Gradient Boosting, MLP, CNN, LSTM, and RNN.
+2. **Load Dataset**: Reads the dataset and prepares it by dropping unnecessary columns and splitting it into training and testing sets.
+3. **Explainability**: For each model, the pipeline initializes the `ModelExplainability` class and runs both SHAP and LIME explainability methods.
+
+### Example Usage
+
+```python
+from model_explainability_pipeline import pipeline_model_explainability
+
+# Run the model explainability pipeline
+pipeline_model_explainability()
+```
+
+### Required Files:
+1. **Models**: Ensure that your models are saved in `.pkl` format (for traditional ML models) or `.pth` format (for deep learning models like CNN, LSTM, RNN).
+2. **Dataset**: The dataset should be in `.csv` format, with the target column labeled as `"class"` and the unnecessary columns dropped as required.
+
+---
+
+## Folder Structure
+
+```bash
+your_project/
+├── scripts/
+│   ├── model_explainability.py   # Contains the ModelExplainability class
+│   └── model_explainability_pipeline.py   # Contains the pipeline function
+├── data/
+│   └── processed_data.csv  # Your dataset
+├── models/  # Folder where the models are stored
+│   ├── Logistic Regression.pkl
+│   ├── Decision Tree.pkl
+│   ├── Random Forest.pkl
+│   ├── Gradient Boosting.pkl
+│   ├── MLP.pkl
+│   ├── CNN.pth
+│   ├── LSTM.pth
+│   └── RNN.pth
+└── notebooks/
+    └── explainability_plots/  # Folder where SHAP and LIME plots are saved
+```
+
+---
 
 
 ### Feature Works
 
 The next steps involve building an end-to-end fraud detection pipeline:
-
-- **Model Explainability** – Use SHAP, LIME, and feature importance analysis to interpret model decisions.
 - **Model Deployment and API Development** – Deploy the trained model using Flask and FastAPI for real-time fraud detection.
 - **Build a Dashboard with Flask and Dash** – Develop an interactive web-based dashboard for visualizing fraud detection insights.
 
