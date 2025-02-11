@@ -13,6 +13,7 @@ def pipeline_model_training_processes():
     """Run all model building, training and evaluation processes methods."""
     # trainer = FraudDetectionModel(df, target_column)
 
+    train_pipeliner.save_filtered_processed_data()
     train_pipeliner.data_preparation()
     train_pipeliner.train_sklearn_models()
 

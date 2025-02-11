@@ -2,6 +2,7 @@
 
 Model building building, training, evalauation.
 """
+import os
 import pickle
 
 # import pandas as pd
@@ -53,6 +54,13 @@ class FraudDetectionModel:
         self.X_test = None
         self.y_train = None
         self.y_test = None
+
+    def save_filtered_processed_data(self, output_path='/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/data/filtered_processed_data.csv'):
+        """Save the processed data to a CSV file."""
+        print("\n\n*****************************************************\n")
+        if os.path.exists(output_path):
+            os.remove(output_path)
+        self.data.to_csv(output_path, index=False)
 
     def data_preparation(self, test_size=0.2):
         """Prepare data for training."""
