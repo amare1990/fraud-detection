@@ -16,15 +16,15 @@ def home():
   return jsonify({"message": "Fraud API running"}), 200
 
 
-@app.route("/summary", methods=["GER"])
+@app.route("/summary", methods=["GET"])
 
 def summary():
-  total_purchasing = len(df)
+  total_transaction = len(df)
   total_fraud_cases = df[df["class"] == 1].shape[0]
-  fraud_percentage = (total_fraud_cases / total_purchasing) * 100
+  fraud_percentage = (total_fraud_cases / total_transaction) * 100
 
   summary_data = {
-      "total_transactions": total_purchasing,
+      "total_transactions": total_transaction,
       "total_fraud_cases": total_fraud_cases,
       "fraud_percentage": round(fraud_percentage, 2),
   }
