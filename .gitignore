@@ -52,3 +52,7 @@ checkpoints/
 # Ignore logs & cache
 logs/
 __pycache__/
+
+*.log
+fraud_detection_api/fraud_api.log
+

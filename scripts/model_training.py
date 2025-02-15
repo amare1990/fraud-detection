@@ -1,5 +1,4 @@
 """
-
 Model building building, training, evalauation.
 """
 import os
@@ -19,7 +18,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
 from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
+# from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.neural_network import MLPClassifier
@@ -56,7 +55,7 @@ class FraudDetectionModel:
         self.y_test = None
 
     def save_filtered_processed_data(self, output_path='/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/data/filtered_processed_data.csv'):
-        """Save the processed data to a CSV file."""
+        """Save the filtered and processed data to a CSV file."""
         print("\n\n*****************************************************\n")
         if os.path.exists(output_path):
             os.remove(output_path)

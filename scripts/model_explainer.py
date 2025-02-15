@@ -1,25 +1,32 @@
-"""Pipeliner for model explanability. """
+"""Pipelining model explainability"""
 
 import pickle
 import pandas as pd
 import torch  # Required for loading PyTorch models
-# Ensure your explainability class is imported
+
+# Import DL models and their wrapper class
+from scripts.cnn import CNNModel
+from scripts.lstm import LSTMModel
+from scripts.rnn import RNNModel
+from scripts.dl_wrapper import ModelWrapper
+
 from scripts.model_explainability import ModelExplainability
 
 
 def pipeline_model_explainability():
     """A method to pipleine all processes in model explanability."""
+
     # Define models to load
-    models_dir = "/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/models"
+    base_dir_models = "/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/models"
     model_paths = {
-        "Logistic Regression": f"{models_dir}/Logistic Regression.pkl",
-        "Decision Tree": f"{models_dir}/Decision Tree.pkl",
-        "Random Forest": f"{models_dir}/Random Forest.pkl",
-        "Gradient Boosting": f"{models_dir}Gradient Boosting.pkl",
-        "MLP": f"{models_dir}/MLP.pkl",
-        "CNN": f"{models_dir}/CNN.pth",
-        "LSTM": f"{models_dir}/LSTM.pth",
-        "RNN": f"{models_dir}/RNN.pth"
+        "Logistic Regression": f"{base_dir_models}/Logistic Regression.pkl",
+        "Decision Tree": f"{base_dir_models}/Decision Tree.pkl",
+        "Random Forest": f"{base_dir_models}/Random Forest.pkl",
+        "Gradient Boosting": f"{base_dir_models}/Gradient Boosting.pkl",
+        "MLP": f"{base_dir_models}/MLP Classifier.pkl",
+        "CNN": f"{base_dir_models}/CNN.pth",
+        "LSTM": f"{base_dir_models}/LSTM.pth",
+        "RNN": f"{base_dir_models}/RNN.pth"
     }
 
     # Load dataset
@@ -37,7 +44,7 @@ def pipeline_model_explainability():
 
     # Prepare training and testing data
     X = df.drop(columns=[target_column])
-    # y = df[target_column]
+    y = df[target_column]  # Of course, this data is not used here.
     X_train, X_test = X.iloc[:int(0.8 * len(X))], X.iloc[int(0.8 * len(X)):]
     # Ensures feature names match the dataset
     feature_names = X_train.columns.tolist()
@@ -51,13 +58,26 @@ def pipeline_model_explainability():
             with open(path, 'rb') as f:
                 model = pickle.load(f)
         elif path.endswith(".pth"):  # Deep Learning models (PyTorch)
-            model = torch.load(path)  # Load the model state_dict
-            model.eval()  # Set to evaluation mode for inference
+
+            # You'll need to determine input_size
+            input_size = X_train.shape[1]
+
+            if model_name == 'CNN':
+                model = CNNModel(input_size)
+            elif model_name == 'LSTM':
+                model = LSTMModel(input_size)
+            elif model_name == 'RNN':
+                model = RNNModel(input_size)
+
+            state_dict = torch.load(path)  # Load state_dict
+            model.load_state_dict(state_dict)  # Load state_dict into the model
+            # Wrap the model to ensure predict_proba() exists
+            model = ModelWrapper(model)
         else:
             print(f"Skipping unknown model format: {path}")
             continue
 
-        base_dir = "home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks"
+        base_dir = "/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud_detection/notebooks"
 
         # Initialize explainability
         explainer = ModelExplainability(

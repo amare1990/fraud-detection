@@ -347,6 +347,77 @@ your_project/
 ---
 
 
+
+### Model Deployment and API Development
+
+
+
+```markdown
+## Fraud Detection API
+
+This project provides a Flask API for fraud detection using machine learning (ML) and deep learning (DL) models, such as Logistic Regression, Decision Trees, CNN, LSTM, and RNN. It's Dockerized for easy deployment.
+
+### Requirements
+- Python>3.8
+- Docker
+
+### Directory setup
+- Navigate to the root directort
+  -cd fraud_detection
+- Navigate the api endpoint project
+  -cd fraud_detection_api
+
+
+Install dependencies via `requirements.txt`:
+```bash
+pip install -r requirements.txt
+```
+
+### Docker Setup
+1. **Build the Docker Image**:
+   ```bash
+   docker build -t fraud-detection-api .
+   ```
+
+2. **Run the Docker Container**:
+   ```bash
+   docker run -p 5000:5000 fraud-detection-api
+   ```
+
+### API Endpoints
+
+- **GET /**: Returns a message indicating the API is running.
+
+- **POST /predict**: Predicts fraud on a transaction. Example request:
+  ```json
+  {
+    "purchase_value": 250.5,
+    "age": 32,
+    "browser": "Chrome",
+    "ip_address": "192.168.1.1"
+  }
+  ```
+  Response:
+  ```json
+  {
+    "model_used": "Logistic Regression",
+    "prediction": 0,
+    "fraud_probability": 0.12
+  }
+  ```
+
+### Models
+The API uses the following pre-trained models:
+- **Machine Learning**: Logistic Regression, Decision Tree, Random Forest, Gradient Boosting, MLP Classifier
+- **Deep Learning**: CNN, LSTM, RNN
+
+### Testing
+Use the provided `test_api.py` script to test the API locally.
+
+---
+
+
+
 ### Feature Works
 
 The next steps involve building an end-to-end fraud detection pipeline:
