@@ -10,7 +10,7 @@ import torch  # Required for loading PyTorch models
 
 
 # Add the root directory to the system path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from scripts.cnn import CNNModel  # Ensure this file exists
 from scripts.lstm import LSTMModel  # Ensure this file exists
