@@ -1,17 +1,14 @@
-# Stage 1: Build dependencies (build environment)
+# Use a lightweight Python image
 FROM python:3.10.16-slim as build-stage
 
-# Set the working directory inside the container
+# Set the working directory
 WORKDIR /app
 
-# Copy the entire project
+# Copy project files
 COPY . .
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Set PYTHONPATH so that the scripts folder is found
-ENV PYTHONPATH=/app
 
 # Expose port 5000
 EXPOSE 5000

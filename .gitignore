@@ -56,3 +56,6 @@ __pycache__/
 *.log
 fraud_detection_api/fraud_api.log
 
+# Ignore data in the dashboard
+fraud_detection_dashboard/Fraud_Data.csv
+fraud_detection_dashboard/processed_data.csv

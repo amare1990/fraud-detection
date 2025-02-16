@@ -1,6 +1,7 @@
 # Credit Card and e-Commerce Fraud Detection
 
-> This fraud detection project aims to build improved detection systems using Machine Learning (ML) and Deep Learning (DL) techniques to identify fraudulent e-commerce and credit card transactions. The project involves data cleaning, preprocessing, feature engineering, and encoding. Exploratory Data Analysis (EDA) is conducted to gain insights into individual features and the relationships between variables. Traditional ML models and modern DL architectures (CNN and LSTM) are implemented and evaluated. Additionally, `mlflow` is used to track the models' runtime. The project is primarily implemented using Python.
+> This fraud detection project aims to build improved detection systems using Machine Learning (ML) and Deep Learning (DL) techniques to identify fraudulent e-commerce and credit card transactions. The project involves data cleaning, preprocessing, feature engineering, and encoding. Exploratory Data Analysis (EDA) is conducted to gain insights into individual features and the relationships between variables. Traditional ML models and modern DL architectures (CNN and LSTM) are implemented and evaluated. Additionally, `mlflow` is used to track the models' runtime. The project is primarily implemented using Python and is containerized with Docker, with visualizations provided by the `dash` Python package.
+---
 
 ## Built With
 
@@ -8,9 +9,13 @@
 - **Libraries:** NumPy, Pandas, Matplotlib, Seaborn, Scikit-learn, torch
 - **Tools & Technologies:** Jupyter Notebook, Google Colab, Git, GitHub, Gitflow, VS Code
 
+
 ## Demonstration and Website
 
 [Deployment link]()
+
+---
+
 
 ## Getting Started
 
@@ -62,13 +67,76 @@ Ensure you have the following installed:
 
 To build and evaluate the fraud detection system, the following datasets are utilized:
 
-- **`Fraud_data.csv`** – Contains transaction records labeled as fraudulent or legitimate.
+- **`Fraud_data.csv`** – Contains transaction records labeled as fraudulent or legitimate. I used this data to build models.
 - **`IP_Address_To_Country.csv`** – Provides geolocation data, mapping IP addresses to specific countries.
 - **`Creditcard.csv`** – Includes credit card transaction details with fraud labels.
 
 These datasets support transaction analysis, feature engineering, and model training, ensuring a comprehensive approach to fraud detection.
 
-### Project Requirements
+## Folder Structure
+
+```bash
+fraud_detection/
+├── .gitignore                # Git ignore file to exclude unnecessary files
+├── README.md                 # Documentation for your project
+├── .githubworkflows/
+│   └── pylint.yml            # GitHub Actions workflow for running pylint checks
+├── fraud_detection_api/      # API serving the fraud detection models
+│   ├── scripts/               # Contains scripts for models too
+    ├── serve_model_api.py    # API to serve models for predictions
+│   └── Docker
+    ├── requirements.txt       # Copied packages from the project
+│   └── test_api.py            # To test the Flask api
+
+
+        # Additional files for the API
+├── fraud_detection_dashboard/  # Folder for the dashboard app
+│   ├── app.py                # Main dashboard application script
+│   └── dashboard.py        # Additional files for the dashboard
+    ├── static           # Main dashboard application script
+│   └── templates
+    ├── Fraud_Dta.csv              # Main dashboard application script
+│   └── processed_data.csv
+    └── requirements.txt
+
+├── data/                     # Folder containing the dataset
+│   └── Fraud_Data.csv         # Raw data
+    └── processed_data.csv     # Your dataset, processed and ready for use
+├── models/                   # Folder where the models are stored
+│   ├── Logistic Regression.pkl  # Serialized Logistic Regression model
+│   ├── Decision Tree.pkl       # Serialized Decision Tree model
+│   ├── Random Forest.pkl       # Serialized Random Forest model
+│   ├── Gradient Boosting.pkl   # Serialized Gradient Boosting model
+│   ├── MLP.pkl                # Serialized MLP Classifier model
+│   ├── CNN.pth                # Serialized CNN model
+│   ├── LSTM.pth               # Serialized LSTM model
+│   └── RNN.pth                # Serialized RNN model
+├── scripts/                   # Folder containing utility scripts
+    ├── __init__.py
+│   ├── data_analysis_preprocessing.py
+    ├── model_training.py
+│   └── pipeline_model_building_processes.py
+    ├── model_explainability.py
+│   └── model_explainer.py  # Contains the pipeline function for the model explainability module
+    ├── cnn.py  # Contains CNNModel class
+│   └── lstm.py  # Contains the LSTMModel class
+    ├── rnn.py  # Contains the RNNModel class
+│   └── dl_wrapper.py  # Contains wrapper class for the DL models
+├── src/                       # Source code for your project
+│   ├── src.py          # Code for training, testing, etc.
+    ├── __init__.py
+├── notebooks/                 # Folder for Jupyter Notebooks│
+│   ├── plots/                 # Folder where EDA plots, SHAP and LIME plots are saved
+│   └── data_processor.ipynb   # To run data_analysis_preprocessing.py
+    └── model_building.ipynb   # To run model_trainin.py processes
+    └── model_explainer.ipynb  # To run model_explainability.py processes
+├── mlruns/                    # Folder for MLflow experiment logs
+└── v-fraud-detec/             # Virtual environment for fraud detection
+
+```
+---
+
+## Project Requirements
 - Git, GitHub setup, adding `pylint' in the GitHub workflows
 - Data Analysis and Preprocessing
 - Model Building and Training
@@ -77,7 +145,7 @@ These datasets support transaction analysis, feature engineering, and model trai
 - Build a Dashboard with Flask and Dash
 
 
-#### GitHub Action and Following Python Coding Styles
+### GitHub Action and Following Python Coding Styles
 - The `pylint` linters are added in the `.github/workflows` direcory of the repo, which is triggered while creating GitHub pull requests.
 - Make it to check when Pull request is created
 - Run `pylint scripts/*.py` to check if the code follows the standard format
@@ -116,7 +184,7 @@ The **data analysis and preprocessing** phase is crucial for ensuring the qualit
 
 ### Model Building
 
-This project implements a fraud detection model using both traditional machine learning and deep learning techniques. The model-building process consists of data preparation, training, evaluation, and model storage.
+This project implements a fraud detection model using both traditional machine learning and deep learning techniques. The model-building process consists of data preparation, training, evaluation, and model saving.
 The core functionality of model building, training, evaluation, saving and tracking experiments are implemented in the `scripts/model_training.py` script. To pipeline all processes of model building, training, evaluation, savining and tracking the model experiments with `mlflow`,`pipeline_model_building_processes.py` script is implemented and run to view results. Below is a detailed breakdown of each step:
 
 #### 1. Data Preparation
@@ -320,40 +388,14 @@ pipeline_model_explainability()
 1. **Models**: Ensure that your models are saved in `.pkl` format (for traditional ML models) or `.pth` format (for deep learning models like CNN, LSTM, RNN).
 2. **Dataset**: The dataset should be in `.csv` format, with the target column labeled as `"class"` and the unnecessary columns dropped as required.
 
----
-
-## Folder Structure
-
-```bash
-your_project/
-├── scripts/
-│   ├── model_explainability.py   # Contains the ModelExplainability class
-│   └── model_explainability_pipeline.py   # Contains the pipeline function
-├── data/
-│   └── processed_data.csv  # Your dataset
-├── models/  # Folder where the models are stored
-│   ├── Logistic Regression.pkl
-│   ├── Decision Tree.pkl
-│   ├── Random Forest.pkl
-│   ├── Gradient Boosting.pkl
-│   ├── MLP.pkl
-│   ├── CNN.pth
-│   ├── LSTM.pth
-│   └── RNN.pth
-└── notebooks/
-    └── explainability_plots/  # Folder where SHAP and LIME plots are saved
-```
-
----
 
 
-
-### Model Deployment and API Development
+## Model Deployment and API Development
 
 
 
 ```markdown
-## Fraud Detection API
+## fraud_etection_aPI
 
 This project provides a Flask API for fraud detection using machine learning (ML) and deep learning (DL) models, such as Logistic Regression, Decision Trees, CNN, LSTM, and RNN. It's Dockerized for easy deployment.
 
@@ -363,7 +405,7 @@ This project provides a Flask API for fraud detection using machine learning (ML
 
 ### Directory setup
 - Navigate to the root directort
-  -cd fraud_detection
+  - cd fraud_detection
 - Navigate the api endpoint project
   -cd fraud_detection_api
 
@@ -384,6 +426,15 @@ pip install -r requirements.txt
    docker run -p 5000:5000 fraud-detection-api
    ```
 
+3. You may set up directories while running a docker, by mounting both data and models (Change the directory of you have.)
+   - > sudo docker run -p 5000:5000 \
+-v "/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/data:/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/data" \
+-v "/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/models:/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/models" \
+fraud_detection_api
+```
+
+
+
 ### API Endpoints
 
 - **GET /**: Returns a message indicating the API is running.
@@ -394,7 +445,8 @@ pip install -r requirements.txt
     "purchase_value": 250.5,
     "age": 32,
     "browser": "Chrome",
-    "ip_address": "192.168.1.1"
+    "ip_address": "192.168.1.1",
+    ...
   }
   ```
   Response:
@@ -418,15 +470,84 @@ Use the provided `test_api.py` script to test the API locally.
 
 
 
-### Feature Works
+## Build a Dashboard with Flask and Dash
+
+```markdown
+
+This section explains how to build a dashboard using Flask for the backend and Dash for the frontend to visualize fraud detection trends and statistics.
+
+### Backend with Flask (`app.py`)
+
+The Flask application serves data through various API endpoints that provide information about fraud cases. The endpoints include fraud statistics by different categories such as geographic location, time, device, and browser.
+
+#### Key Endpoints:
+- **GET /**: Returns a message indicating that the API is running.
+- **GET /summary**: Provides a summary of fraud detection data, including the total number of transactions, fraud cases, fraud percentage, and features.
+- **GET /fraud_by_country**: Returns the number of fraud cases grouped by country.
+- **GET /fraud_trend**: Returns the fraud cases trend over time.
+- **GET /fraud_trend_by_day**: Provides the trend of fraud cases by hour of the day.
+- **GET /fraud_trend_by_week**: Shows the trend of fraud cases by day of the week.
+- **GET /fraud_by_device**: Returns the number of fraud cases per device.
+- **GET /fraud_by_browser**: Provides the fraud cases per browser.
+
+#### Running Flask Backend:
+To run the Flask app, use the following command:
+```bash
+python app.py
+```
+
+This will start the Flask server at `http://127.0.0.1:5000`, where you can access the endpoints.
+
+### Frontend with Dash (`dashboard.py`)
+
+The Dash application visualizes the fraud data fetched from the Flask API. It displays various interactive charts such as geographical distribution of fraud cases, fraud trends over time, and fraud counts by device and browser.
+
+#### Features of the Dashboard:
+- **Summary Box**: Displays the total number of transactions, fraud cases, fraud percentage, and features in the dataset.
+- **Geographic Distribution**: Shows fraud cases by country using a choropleth map.
+- **Fraud Trend (Time)**: Displays a line chart of fraud cases over time.
+- **Fraud Trend (Day of Week)**: Visualizes fraud cases by day of the week.
+- **Fraud Trend (Hour of Day)**: Shows fraud cases by hour of the day.
+- **Fraud by Device**: A bar chart displaying the number of fraud cases per device.
+- **Fraud by Browser**: A bar chart displaying the number of fraud cases per browser.
+
+#### Running the Dash App:
+To run the Dash app, use the following command:
+```bash
+python dashboard.py
+```
+
+This will start the Dash server at `http://127.0.0.1:8050`, where the fraud detection dashboard can be accessed.
+
+### Data Flow
+1. **Flask Backend**: The Flask app serves the fraud data through API endpoints.
+2. **Dash Frontend**: The Dash app makes API requests to the Flask backend to retrieve the data and visualize it using Plotly charts.
+
+#### Fetching Data in Dash:
+The data is fetched from the Flask API using HTTP requests. For example, the fraud data by country is retrieved as follows:
+```python
+fraud_by_country = requests.get("http://127.0.0.1:5000/fraud_by_country").json()
+```
+
+### Dependencies:
+Make sure you have the required Python packages installed. You can install them using `pip`:
+```bash
+pip install flask dash requests pandas plotly
+``
+
+
+```
+
+---
+
+## Future Works
 
 The next steps involve building an end-to-end fraud detection pipeline:
-- **Model Deployment and API Development** – Deploy the trained model using Flask and FastAPI for real-time fraud detection.
-- **Build a Dashboard with Flask and Dash** – Develop an interactive web-based dashboard for visualizing fraud detection insights.
+- **Balancing classes using SMOTified+GAN**
 
 
 > #### You can gain more insights by running the jupter notebook and view plots.
-
+---
 
 ### More information
 - You can refer to [this link](https://drive.google.com/file/d/1aZKOSMJHP8vytMt3DrpnHAZAGm5A15Xp/view) to gain more insights about the reports of this project results.
