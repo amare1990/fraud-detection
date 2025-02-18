@@ -401,7 +401,7 @@ class FraudDataProcessor:
         self.bivariate_analysis()
         self.bivariate_categorical_analysis()
 
-        # self.merge_datasets_for_geolocation()
+        self.merge_datasets_for_geolocation()
         self.feature_engineering()
         self.normalize_and_scale()
         self.encode_categorical_features()

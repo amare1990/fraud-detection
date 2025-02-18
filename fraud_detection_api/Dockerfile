@@ -5,6 +5,7 @@ FROM python:3.10.16-slim as build-stage
 WORKDIR /app
 
 # Copy project files
+# COPy ../scripts /app/
 COPY . .
 
 # Install dependencies
