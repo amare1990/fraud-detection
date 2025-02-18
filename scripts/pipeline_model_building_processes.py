@@ -14,6 +14,7 @@ def pipeline_model_training_processes():
     # trainer = FraudDetectionModel(df, target_column)
 
     train_pipeliner.save_filtered_processed_data()
+    train_pipeliner.balance_data()
     train_pipeliner.data_preparation()
     train_pipeliner.train_sklearn_models()
 
