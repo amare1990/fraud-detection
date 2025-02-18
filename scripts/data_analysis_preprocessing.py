@@ -14,6 +14,9 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
 from scipy.stats import chi2_contingency
 
 
+from scripts.smotified_gan_balancer import SMOTifiedGANBalancer
+
+
 class FraudDataProcessor:
     def __init__(
             self,
@@ -23,6 +26,25 @@ class FraudDataProcessor:
         :param data: Pandas DataFrame
         """
         self.data = pd.read_csv(data_path)
+        self.balancer = SMOTifiedGANBalancer()
+
+    def balance_data(self, target_col='class'):
+        """
+        Calls the SMOTified+GAN method to balance data.
+        """
+        print("Balancing data using SMOTified+GAN...")
+
+        numerical_cols = self.retrieve_numerical_columns()
+        X = self.data[numerical_cols].values
+        y = self.data[target_col].values
+
+        X_balanced, y_balanced = self.balancer.balance_data(X, y)
+
+        # Store the balanced data
+        self.data = pd.DataFrame(X_balanced, columns=numerical_cols)
+        self.data[target_col] = y_balanced
+
+        print("Data Balancing Completed Successfully.")
 
     def overview_of_data(self):
         """Provide an overview of the dataset."""
