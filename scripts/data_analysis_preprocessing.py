@@ -3,7 +3,6 @@ Data Analysis and Preprocessing
 """
 import numpy as np
 import pandas as pd
-import ipaddress
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -12,6 +11,8 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
 
 from scipy.stats import chi2_contingency
+
+
 
 
 class FraudDataProcessor:
@@ -401,7 +402,7 @@ class FraudDataProcessor:
         self.bivariate_analysis()
         self.bivariate_categorical_analysis()
 
-        # self.merge_datasets_for_geolocation()
+        self.merge_datasets_for_geolocation()
         self.feature_engineering()
         self.normalize_and_scale()
         self.encode_categorical_features()

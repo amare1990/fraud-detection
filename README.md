@@ -187,6 +187,42 @@ The **data analysis and preprocessing** phase is crucial for ensuring the qualit
 This project implements a fraud detection model using both traditional machine learning and deep learning techniques. The model-building process consists of data preparation, training, evaluation, and model saving.
 The core functionality of model building, training, evaluation, saving and tracking experiments are implemented in the `scripts/model_training.py` script. To pipeline all processes of model building, training, evaluation, savining and tracking the model experiments with `mlflow`,`pipeline_model_building_processes.py` script is implemented and run to view results. Below is a detailed breakdown of each step:
 
+#### Class Balancing
+
+
+This repository provides a **SMOTified+GAN** approach to balance highly imbalanced fraud datasets. It first applies **SMOTE** to generate synthetic samples for the minority class and then refines the balance using a **Generative Adversarial Network (GAN)**.
+
+## **Features**
+- **SMOTE Oversampling:** Generates synthetic samples for underrepresented classes.
+- **GAN-Based Balancing:** Uses a neural network to refine the distribution.
+- **Automated Data Processing:** Standardizes data before training.
+- **Customizable Hyperparameters:** Adjustable batch size, epochs, and learning rate.
+
+## **Usage**
+1. **Install Dependencies:**
+   ```bash
+   pip install numpy torch imbalanced-learn scikit-learn matplotlib pandas
+   ```
+2. **Import and Balance Data:**
+   ```python
+   from scripts.smotified_gan_balancer import SMOTifiedGANBalancer
+
+   balancer = SMOTifiedGANBalancer()
+   X_balanced, y_balanced = balancer.balance_data(X, y)
+   ```
+3. **Train a Fraud Detection Model:**
+   ```python
+   from model_training import FraudDetectionModel
+
+   model = FraudDetectionModel(data, target_column='class')
+   model.balance_data()
+   ```
+
+## **Output**
+- Balanced dataset saved as `balanced_data.csv`
+- Loss curve plotted in `loss_curve_GAN.png`
+
+
 #### 1. Data Preparation
 
 - Before training, the dataset undergoes preprocessing to enhance model performance:

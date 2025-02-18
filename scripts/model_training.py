@@ -3,8 +3,9 @@ Model building building, training, evalauation.
 """
 import os
 import pickle
+import random
 
-# import pandas as pd
+import pandas as pd
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -18,6 +19,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
 from sklearn.linear_model import LogisticRegression
+
 # from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
@@ -34,6 +36,26 @@ from scripts.cnn import CNNModel
 from scripts.rnn import RNNModel
 from scripts.lstm import LSTMModel
 
+from scripts.smotified_gan_balancer import SMOTifiedGANBalancer
+
+
+# Set random seed for reproducibility
+def set_seed(seed_value=42):
+    """Set seed for reproducibility across all necessary libraries."""
+    random.seed(seed_value)  # Python random
+    np.random.seed(seed_value)  # NumPy
+    torch.manual_seed(seed_value)  # PyTorch (CPU)
+
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed_value)  # PyTorch CUDA
+        torch.cuda.manual_seed_all(seed_value)  # Multi-GPU
+        torch.backends.cudnn.deterministic = True  # Ensure deterministic behavior
+        torch.backends.cudnn.benchmark = False  # Turn off optimizations that introduce randomness
+
+    print(f"Random seed set to: {seed_value}")
+
+set_seed(42)  # Call this before anything random happen
+
 
 class FraudDetectionModel:
     """A machine learning model using PyTorch."""
@@ -46,6 +68,9 @@ class FraudDetectionModel:
         self.data = data.drop(columns=excluded_columns, errors='ignore')
 
         self.target_column = target_column
+
+        self.balancer = SMOTifiedGANBalancer()
+
         self.models = {}
 
         # Initialize dataset attributes
@@ -60,6 +85,33 @@ class FraudDetectionModel:
         if os.path.exists(output_path):
             os.remove(output_path)
         self.data.to_csv(output_path, index=False)
+
+    def retrieve_numerical_columns(self):
+        """Return a list of numerical columns."""
+        return self.data.select_dtypes(include=[np.number]).columns.tolist()
+
+    def balance_data(self, target_col='class'):
+        """
+        Calls the SMOTified+GAN method to balance data.
+        """
+        print("Balancing data using SMOTified+GAN...")
+
+        numerical_cols = self.retrieve_numerical_columns()
+        X = self.data[numerical_cols].values
+        y = self.data[target_col].values
+
+        X_balanced, y_balanced = self.balancer.balance_data(X, y)
+
+        # Store the balanced data
+        self.data = pd.DataFrame(X_balanced, columns=numerical_cols)
+        self.data[target_col] = y_balanced
+
+        # Save the balanced data
+        output_path='/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/data/balanced_data.csv'
+        self.data.to_csv(output_path, index=False)
+        print(f"Balanced and Processed data saved to {output_path}")
+
+        print("Data Balancing Completed Successfully.")
 
     def data_preparation(self, test_size=0.2):
         """Prepare data for training."""
