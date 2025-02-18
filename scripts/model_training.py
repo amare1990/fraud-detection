@@ -34,6 +34,14 @@ from scripts.cnn import CNNModel
 from scripts.rnn import RNNModel
 from scripts.lstm import LSTMModel
 
+import random
+# Set random seeds for reproducibility
+SEED = 42
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+torch.cuda.manual_seed_all(SEED)  # If using GPUs
+
 
 class FraudDetectionModel:
     """A machine learning model using PyTorch."""

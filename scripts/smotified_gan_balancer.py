@@ -8,6 +8,21 @@ from imblearn.over_sampling import SMOTE
 from sklearn.preprocessing import StandardScaler
 
 
+import random
+# Set random seed for reproducibility
+def set_seed(seed_value=42):
+    random.seed(seed_value)
+    np.random.seed(seed_value)
+    torch.manual_seed(seed_value)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed_value)
+        torch.cuda.manual_seed_all(seed_value)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False  # Ensures deterministic behavior
+
+set_seed(42)  # Call this before any random operation
+
+
 class SMOTifiedGANBalancer:
     """
     A class to balance imbalanced fraud datasets using SMOTE followed by a GAN.
