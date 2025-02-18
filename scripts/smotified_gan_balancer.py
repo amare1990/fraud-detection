@@ -1,4 +1,5 @@
 """smotified_gan_balancer.py` (Standalone Module for Balancing)"""
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -8,19 +9,27 @@ from imblearn.over_sampling import SMOTE
 from sklearn.preprocessing import StandardScaler
 
 
+import matplotlib.pyplot as plt
+
+
 import random
+
 # Set random seed for reproducibility
 def set_seed(seed_value=42):
-    random.seed(seed_value)
-    np.random.seed(seed_value)
-    torch.manual_seed(seed_value)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed(seed_value)
-        torch.cuda.manual_seed_all(seed_value)
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False  # Ensures deterministic behavior
+    """Set seed for reproducibility across all necessary libraries."""
+    random.seed(seed_value)  # Python random
+    np.random.seed(seed_value)  # NumPy
+    torch.manual_seed(seed_value)  # PyTorch (CPU)
 
-set_seed(42)  # Call this before any random operation
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed_value)  # PyTorch CUDA
+        torch.cuda.manual_seed_all(seed_value)  # Multi-GPU
+        torch.backends.cudnn.deterministic = True  # Ensure deterministic behavior
+        torch.backends.cudnn.benchmark = False  # Turn off optimizations that introduce randomness
+
+    print(f"Random seed set to: {seed_value}")
+
+set_seed(42)  # Call this before anything random happen
 
 
 class SMOTifiedGANBalancer:
@@ -107,9 +116,24 @@ class SMOTifiedGANBalancer:
         optimizer_D = optim.Adam(discriminator.parameters(), lr=self.lr)
 
         dataset = TensorDataset(X_resampled_tensor, y_resampled_tensor)
-        dataloader = DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
+
+        # Create a DataLoader with controlled randomness
+        dataloader = DataLoader(
+            dataset,
+            batch_size=self.batch_size,
+            shuffle=True,
+            worker_init_fn=lambda worker_id: np.random.seed(42),
+            generator=torch.Generator().manual_seed(42)
+        )
+
+
+        d_losses = []
+        g_losses = []
 
         for epoch in range(self.num_epochs):
+            epoch_g_loss = 0
+            epoch_d_loss = 0
+            batch_count = 0
             for real_samples, _ in dataloader:
                 batch_size = real_samples.size(0)
 
@@ -138,10 +162,39 @@ class SMOTifiedGANBalancer:
                 g_loss.backward()
                 optimizer_G.step()
 
+                 # Store loss values for plotting
+                # d_losses.append(d_loss.item())
+                # g_losses.append(g_loss.item())
+
+                epoch_g_loss += g_loss.item()
+                epoch_d_loss += d_loss.item()
+                batch_count += 1
+
+                # Store average loss for this epoch
+                g_losses.append(epoch_g_loss / batch_count)
+                d_losses.append(epoch_d_loss / batch_count)
+
             if (epoch + 1) % 10 == 0:
                 print(f"Epoch [{epoch + 1}/{self.num_epochs}], D Loss: {d_loss.item():.4f}, G Loss: {g_loss.item():.4f}")
 
         print("GAN Training Completed. Generating Synthetic Data...")
+
+        # After training, plot the loss curves:
+        plt.figure(figsize=(8, 5))
+        epochs = list(range(1, self.num_epochs + 1))  # Ensure x-axis matches y-axis
+        plt.plot(epochs, g_losses, label="Generator Loss")
+        plt.plot(epochs, d_losses, label="Discriminator Loss")
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss")
+        plt.title("GAN Training Loss Curve")
+        plt.savefig(
+            "/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/Notebooks/plots/class_balancing/loss_curve_GAN.png",
+            dpi=300,
+            bbox_inches="tight"
+            )
+
+        plt.legend()
+        plt.show()
 
         # Step 4: Generate Synthetic Data
         num_synthetic_samples = sum(y_resampled == 0)
