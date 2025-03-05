@@ -54,7 +54,7 @@ httpcore==1.0.7
 httpx==0.28.1
 idna==3.10
 imageio==2.35.1
-imbalanced-learn==0.13.0
+imbalanced-learn==0.12.4
 imblearn==0.0
 importlib_metadata==8.5.0
 importlib_resources==6.4.5
