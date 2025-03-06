@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder, OneHotEncoder
 
 from scipy.stats import chi2_contingency
 
@@ -323,61 +323,65 @@ class FraudDataProcessor:
         # If the same device_id is used by multiple user_ids, it may indicate fraudulent accounts.
         self.data['device_shared_count'] = self.data.groupby('device_id')['user_id'].transform('nunique')
 
+        # Age Grouping (Binning)
+        self.data['age_group'] = pd.cut(self.data['age'], bins=[0, 18, 30, 45, 60, 100], labels=['Teen', 'Young', 'Adult', 'Middle_Aged', 'Senior'])
+
 
 
     def normalize_and_scale(self):
         """Normalize and scale numerical features."""
         print("Normalizing and scaling numerical features... starting")
-        scaler = StandardScaler()
-        # numerical_columns = self.retrieve_numerical_columns()
-        scalable_columns = ['age', 'transaction_frequency', 'transaction_velocity', 'purchase_value']
+        scaler = MinMaxScaler()
+        scalable_columns = ['transaction_frequency', 'transaction_velocity', 'purchase_value', 'device_shared_count']
         print(f"Scalable columns: {scalable_columns}")
         self.data[scalable_columns] = scaler.fit_transform(self.data[scalable_columns])
         print("Normalization and scaling done.")
 
-    def encode_categorical_features(self, method='onehot'):
-        """Encode selected categorical features using One-Hot or Label Encoding."""
+
+    def encode_categorical_features(self):
+        """Encode categorical features:
+        - 'sex' using Label Encoding.
+        - 'browser', 'source', 'country', 'age_group' using One-Hot Encoding.
+        """
         print("\n\n*****************************************************\n")
         print("Encoding selected categorical features... starting")
 
         label_encoder = LabelEncoder()
+        onehot_encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
 
-        # Features to encode
-        selected_categorical_columns = ['ip_address_country', 'sex', 'browser', 'source']
+        # Define categorical feature groups
+        label_encoding_column = 'sex'  # Label encode 'sex'
+        onehot_encoding_columns = ['browser', 'source', 'country', 'age_group']  # One-hot encode the rest
 
         # Ensure only existing columns are selected
-        selected_categorical_columns = [col for col in selected_categorical_columns if col in self.data.columns]
-        # Fill missing values with 'Unknown' to prevent the creation of extra 'nan' columns
-        self.data[selected_categorical_columns] = self.data[selected_categorical_columns].astype(str)
+        onehot_encoding_columns = [col for col in onehot_encoding_columns if col in self.data.columns]
 
+        # Convert to string to handle missing values and prevent issues
+        self.data[label_encoding_column] = self.data[label_encoding_column].astype(str)
+        self.data[onehot_encoding_columns] = self.data[onehot_encoding_columns].astype(str)
 
-        if method == 'onehot':
-            encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
+        # Apply Label Encoding to 'sex'
+        if label_encoding_column in self.data.columns:
+            self.data[label_encoding_column] = label_encoder.fit_transform(self.data[label_encoding_column])
 
-            for col in selected_categorical_columns:
-                # Reshape and fit transform
-                encoded_data = encoder.fit_transform(self.data[[col]])
-                encoded_df = pd.DataFrame(
-                    encoded_data,
-                    columns=[f"{col}_{category}" for category in encoder.categories_[0]]
-                )
+        # Apply One-Hot Encoding to the remaining categorical features
+        if onehot_encoding_columns:
+            encoded_data = onehot_encoder.fit_transform(self.data[onehot_encoding_columns])
+            encoded_df = pd.DataFrame(
+                encoded_data,
+                columns=[f"{col}_{category}" for col, categories in zip(onehot_encoding_columns, onehot_encoder.categories_) for category in categories]
+            )
 
-                # Drop original column and concatenate encoded columns
-                self.data = self.data.drop(col, axis=1)
-                self.data = pd.concat([self.data, encoded_df], axis=1)
+            # Drop original categorical columns and merge one-hot encoded data
+            self.data = self.data.drop(columns=onehot_encoding_columns)
+            self.data = pd.concat([self.data, encoded_df], axis=1)
 
-        else:  # Label Encoding
-            for col in selected_categorical_columns:
-                self.data[col] = label_encoder.fit_transform(self.data[col])
-
-        print(f"Shape of data before dropping nan selected categ columns: {self.data.shape}")
+        # Drop any unwanted "_nan" columns and remove NaNs
         self.data = self.data.drop(columns=[col for col in self.data.columns if "_nan" in col], errors="ignore")
-        print(f"Shape of data after dropping nan selected categ columns: {self.data.shape}")
-
         self.data = self.data.dropna()
-        print(f"Shape of data after dropping all columns having nan values: {self.data.shape}")
 
-        print(f"Categorical encoding using {method} completed.")
+        print("Categorical encoding completed.")
+
 
     def save_processed_data(
             self,
