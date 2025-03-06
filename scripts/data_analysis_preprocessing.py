@@ -142,8 +142,8 @@ class FraudDataProcessor:
             plt.figure(figsize=(10, 6))
             sns.histplot(self.data[col], kde=True)
             plt.title(f"Univariate Analysis - {col}")
-            plt.xlabel(col)  # X-label for numerical data
-            plt.ylabel("Frequency")  # Y-label indicating frequency
+            plt.xlabel(col)
+            plt.ylabel("Frequency")
             plt.savefig(
                 f'/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/univariante/numerical/hist_{col}.png',
                 dpi=300,
@@ -151,15 +151,15 @@ class FraudDataProcessor:
             plt.show()
 
         """Perform univariante analysis on categorical columns."""
-        print("Univariate Analysis starting: categorical columns")
+        print("Univariate Analysis for categorical columns starting...")
         categorical_columns = self.data.select_dtypes(
             include=['object', 'category']).columns.tolist()
         for col in categorical_columns:
             plt.figure(figsize=(10, 6))
             sns.countplot(x=self.data[col])
             plt.title(f"Univariante Analysis - {col}")
-            plt.xlabel(col)  # X-label indicating the categorical variable
-            plt.ylabel("Count")  # Y-label indicating the count of occurrences
+            plt.xlabel(col)
+            plt.ylabel("Count")
             plt.savefig(
                 f'/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/notebooks/plots/univariante/categorical/countplot_{col}.png',
                 dpi=300,
@@ -183,7 +183,7 @@ class FraudDataProcessor:
         plt.show()
 
         # Pair Plot (only a subset of columns for better visualization)
-        print("Bivariate Analysis - Pair Plot: Starting")
+        print("\nBivariate Analysis - Pair Plot: Starting...")
         numerical_columns = self.retrieve_numerical_columns()
         # Adjust number of columns to display in pair plot
         subset = numerical_columns[:5]
@@ -316,14 +316,14 @@ class FraudDataProcessor:
         self.data['transaction_frequency'] = self.data.groupby('user_id')['purchase_time'].transform(
             lambda x: x.diff().dt.total_seconds().le(86400).cumsum())
 
-        # Transaction Velocity: Calculate the total amount spent by each user
-        # in the last 24 hours.
-        self.data['transaction_velocity'] = self.data.groupby(
-            'user_id', group_keys=False)[
-            [
-                'purchase_value', 'purchase_time']].apply(
-                lambda g: g.set_index('purchase_time').rolling('1D')['purchase_value'].sum()).reset_index(
-                    level=0, drop=True)  # reset_index to match original df
+
+        # Calculate transaction velocity as the time difference (in seconds) between signup and first purchase
+        self.data['transaction_velocity'] = (self.data['purchase_time'] - self.data['signup_time']).dt.total_seconds()
+
+        # If the same device_id is used by multiple user_ids, it may indicate fraudulent accounts.
+        self.data['device_shared_count'] = self.data.groupby('device_id')['user_id'].transform('nunique')
+
+
 
     def normalize_and_scale(self):
         """Normalize and scale numerical features."""
