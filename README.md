@@ -1,6 +1,6 @@
 # Credit Card and e-Commerce Fraud Detection
 
-> This fraud detection project aims to build improved detection systems using Machine Learning (ML) and Deep Learning (DL) techniques to identify fraudulent e-commerce and credit card transactions. The project involves data cleaning, preprocessing, feature engineering, and encoding. Exploratory Data Analysis (EDA) is conducted to gain insights into individual features and the relationships between variables. Traditional ML models and modern DL architectures (CNN and LSTM) are implemented and evaluated. Additionally, `mlflow` is used to track the models' runtime. The project is primarily implemented using Python and is containerized with Docker, with visualizations provided by the `dash` Python package.
+> Fraud detection project aims to build improved detection systems using Machine Learning (ML) and Deep Learning (DL) techniques to identify fraudulent e-commerce and credit card transactions. The project involves data cleaning, preprocessing, feature engineering, and encoding. Exploratory Data Analysis (EDA) is conducted to gain insights into individual features and the relationships between variables. Traditional ML models and modern DL architectures (CNN and LSTM) are implemented and evaluated. Additionally, `mlflow` is used to track the models' runtime. The project is primarily implemented using Python and is containerized with Docker, with visualizations provided by the `dash` Python package.
 ---
 
 ## Built With
@@ -54,8 +54,15 @@ You can clone this project, use it freely, and contribute to its development.
      python src/src.py
      ```
    - To experiment with individual workflow components, open **Jupyter Notebook** and run each notebook file. The filenames are carefully selected to match their corresponding scripts.
+7. Unit testing
+   - To automate running of all tests
+      ```bash
+      python tests/*.py
+      ```
 
-### Prerequisites
+   ---
+
+## Prerequisites
 
 Ensure you have the following installed:
 - Python (version 3.8.10 or higher)
@@ -63,7 +70,9 @@ Ensure you have the following installed:
 - Git
 - VS Code
 
-### Dataset
+---
+
+## Dataset
 
 To build and evaluate the fraud detection system, the following datasets are utilized:
 
@@ -72,6 +81,8 @@ To build and evaluate the fraud detection system, the following datasets are uti
 - **`Creditcard.csv`** – Includes credit card transaction details with fraud labels.
 
 These datasets support transaction analysis, feature engineering, and model training, ensuring a comprehensive approach to fraud detection.
+
+---
 
 ## Folder Structure
 
@@ -125,6 +136,9 @@ fraud_detection/
 ├── src/                       # Source code for your project
 │   ├── src.py          # Code for training, testing, etc.
     ├── __init__.py
+├── tests/                       # test files are put in this folder
+│   ├── test_feature_engineering.py          # unit tests for feature engineering
+    ├── __init__.py
 ├── notebooks/                 # Folder for Jupyter Notebooks│
 │   ├── plots/                 # Folder where EDA plots, SHAP and LIME plots are saved
 │   └── data_processor.ipynb   # To run data_analysis_preprocessing.py
@@ -139,11 +153,13 @@ fraud_detection/
 ## Project Requirements
 - Git, GitHub setup, adding `pylint' in the GitHub workflows
 - Data Analysis and Preprocessing
+- Unit testing
 - Model Building and Training
 - Model Explainability
 - Model Deployment and API Development
 - Build a Dashboard with Flask and Dash
 
+---
 
 ### GitHub Action and Following Python Coding Styles
 - The `pylint` linters are added in the `.github/workflows` direcory of the repo, which is triggered while creating GitHub pull requests.
