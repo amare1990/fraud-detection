@@ -15,6 +15,8 @@ import matplotlib.pyplot as plt
 import random
 
 # Set random seed for reproducibility
+
+
 def set_seed(seed_value=42):
     """Set seed for reproducibility across all necessary libraries."""
     random.seed(seed_value)  # Python random
@@ -25,9 +27,11 @@ def set_seed(seed_value=42):
         torch.cuda.manual_seed(seed_value)  # PyTorch CUDA
         torch.cuda.manual_seed_all(seed_value)  # Multi-GPU
         torch.backends.cudnn.deterministic = True  # Ensure deterministic behavior
-        torch.backends.cudnn.benchmark = False  # Turn off optimizations that introduce randomness
+        # Turn off optimizations that introduce randomness
+        torch.backends.cudnn.benchmark = False
 
     print(f"Random seed set to: {seed_value}")
+
 
 # Call this before anything random happen
 set_seed(42)
@@ -38,7 +42,8 @@ class SMOTifiedGANBalancer:
     A class to balance imbalanced fraud datasets using SMOTE followed by a GAN.
     """
 
-    def __init__(self, latent_dim=16, num_epochs=100, batch_size=64, lr=0.0002):
+    def __init__(self, latent_dim=16, num_epochs=100,
+                 batch_size=64, lr=0.0002):
         """
         Initialize the balancer with hyperparameters.
 
@@ -54,21 +59,23 @@ class SMOTifiedGANBalancer:
 
     class Generator(nn.Module):
         """Simple GAN Generator."""
+
         def __init__(self, input_dim, output_dim):
             super().__init__()
             self.model = nn.Sequential(
-              nn.Linear(input_dim, 128),
-              nn.ReLU(),
-              nn.Linear(128, 64),
-              nn.ReLU(),
-              nn.Linear(64, output_dim)
-             )
+                nn.Linear(input_dim, 128),
+                nn.ReLU(),
+                nn.Linear(128, 64),
+                nn.ReLU(),
+                nn.Linear(64, output_dim)
+            )
 
         def forward(self, z):
             return self.model(z)
 
     class Discriminator(nn.Module):
         """Simple GAN Discriminator."""
+
         def __init__(self, input_dim):
             super().__init__()
             self.model = nn.Sequential(
@@ -123,7 +130,6 @@ class SMOTifiedGANBalancer:
             generator=torch.Generator().manual_seed(42)
         )
 
-
         d_losses = []
         g_losses = []
 
@@ -168,7 +174,8 @@ class SMOTifiedGANBalancer:
             d_losses.append(epoch_d_loss / batch_count)
 
             if (epoch + 1) % 10 == 0:
-                print(f"Epoch [{epoch + 1}/{self.num_epochs}], D Loss: {d_loss.item():.4f}, G Loss: {g_loss.item():.4f}")
+                print(
+                    f"Epoch [{epoch + 1}/{self.num_epochs}], D Loss: {d_loss.item():.4f}, G Loss: {g_loss.item():.4f}")
 
         print("GAN Training Completed. Generating Synthetic Data...")
 
@@ -198,7 +205,8 @@ class SMOTifiedGANBalancer:
 
         # Step 5: Merge Real and Synthetic Data
         X_final = np.vstack((X_resampled, synthetic_samples))
-        y_final = np.hstack((y_resampled, np.ones(num_synthetic_samples)))  # Assign class 1 to synthetic samples
+        # Assign class 1 to synthetic samples
+        y_final = np.hstack((y_resampled, np.ones(num_synthetic_samples)))
 
         print(f"Final Balanced Data Shape: {X_final.shape}, {y_final.shape}")
 

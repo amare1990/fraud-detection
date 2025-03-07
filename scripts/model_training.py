@@ -1,6 +1,7 @@
 """ Build, train, and evaluation."""
 
 import pickle
+import random
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -26,10 +27,10 @@ from scripts.lstm import LSTMModel
 BASE_DIR = "/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection"
 
 
-
 # Set random seed for reproducibility
 def set_seed(seed_value=42):
-    """Set seed for reproducibility across all necessary libraries."""-    random.seed(seed_value)
+    """Set seed for reproducibility across all necessary libraries."""
+    random.seed(seed_value)
     np.random.seed(seed_value)
     torch.manual_seed(seed_value)
 
@@ -57,8 +58,6 @@ class FraudDetectionModel:
         self.y_train = None
         self.y_test = None
 
-
-
     def balance_data(self, target_col='class'):
         print(f"\n\n{'*'*100}\n")
         print("Balancing data using SMOTified+GAN...")
@@ -71,7 +70,9 @@ class FraudDetectionModel:
         X_balanced, y_balanced = self.balancer.balance_data(X, y)
 
         # Create a new DataFrame with the balanced data
-        self.data = pd.DataFrame(X_balanced, columns=self.data.drop(columns=[target_col]).columns)
+        self.data = pd.DataFrame(
+            X_balanced, columns=self.data.drop(
+                columns=[target_col]).columns)
         self.data[target_col] = y_balanced
 
         # Save the balanced data to a CSV file
@@ -79,7 +80,6 @@ class FraudDetectionModel:
         self.data.to_csv(output_path, index=False)
         print(f"Balanced and processed data saved as {output_path}")
         print("Data balancing completed successfully.")
-
 
     def data_preparation(self, test_size=0.2):
         print(f"\n\n{'*'*100}\n")
@@ -106,17 +106,32 @@ class FraudDetectionModel:
             model.fit(self.X_train, self.y_train)
             self.models[name] = model
 
-    def train_deep_learning_models(self, model_type="LSTM", epochs=10, batch_size=32, learning_rate=0.001):
-        X_train_tensor = torch.tensor(self.X_train, dtype=torch.float32).unsqueeze(1)
-        X_test_tensor = torch.tensor(self.X_test, dtype=torch.float32).unsqueeze(1)
-        y_train_tensor = torch.tensor(self.y_train, dtype=torch.float32).unsqueeze(1)
-        y_test_tensor = torch.tensor(self.y_test, dtype=torch.float32).unsqueeze(1)
+    def train_deep_learning_models(
+            self, model_type="LSTM", epochs=10, batch_size=32, learning_rate=0.001):
+        # Convert X_train and X_test to NumPy arrays before creating tensors
+        X_train_np = self.X_train.values  # Convert DataFrame to NumPy array
+        X_test_np = self.X_test.values    # Convert DataFrame to NumPy array
+
+        X_train_tensor = torch.tensor(
+            X_train_np, dtype=torch.float32).unsqueeze(1)
+        X_test_tensor = torch.tensor(
+            X_test_np, dtype=torch.float32).unsqueeze(1)
+        y_train_tensor = torch.tensor(
+            self.y_train, dtype=torch.float32).unsqueeze(1)
+        y_test_tensor = torch.tensor(
+            self.y_test, dtype=torch.float32).unsqueeze(1)
 
         train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
         test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
 
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=batch_size,
+            shuffle=True)
+        test_loader = DataLoader(
+            test_dataset,
+            batch_size=batch_size,
+            shuffle=True)
 
         input_size = self.X_train.shape[1]
         model = self._initialize_model(model_type, input_size)
@@ -154,7 +169,15 @@ class FraudDetectionModel:
 
     def _plot_loss_curve(self, losses, model_type, epochs):
         plt.figure(figsize=(8, 6))
-        plt.plot(range(1, epochs + 1), losses, marker='o', linestyle='-', color='b', label=f'{model_type} Loss')
+        plt.plot(
+            range(
+                1,
+                epochs + 1),
+            losses,
+            marker='o',
+            linestyle='-',
+            color='b',
+            label=f'{model_type} Loss')
         plt.xlabel("Epochs")
         plt.ylabel("Loss")
         plt.title(f"{model_type} Training Loss Curve")
@@ -167,85 +190,97 @@ class FraudDetectionModel:
 
     def evaluate_models(self):
         perf_result = {}
+
         for name, model in self.models.items():
             if isinstance(model, (LogisticRegression, DecisionTreeClassifier, RandomForestClassifier,
-                                  GradientBoostingClassifier, MLPClassifier)):
+                                GradientBoostingClassifier, MLPClassifier)):
                 y_pred = model.predict(self.X_test)
-                accuracy = accuracy_score(self.y_test, y_pred)
-                precision = precision_score(self.y_test, y_pred, average='weighted')
-                recall = recall_score(self.y_test, y_pred, average='weighted')
-                f1 = f1_score(self.y_test, y_pred, average='weighted')
-                conf_matrix = confusion_matrix(self.y_test, y_pred)
-                class_report = classification_report(self.y_test, y_pred)
-
-                print(f"\n{name} Metrics:")
-                print(f"Accuracy: {accuracy:.4f}")
-                print(f"Precision: {precision:.4f}")
-                print(f"Recall: {recall:.4f}")
-                print(f"F1-Score: {f1:.4f}")
-                print("\nConfusion Matrix:\n", conf_matrix)
-                print("\nClassification Report:\n", class_report)
-
-                perf_result[name] = {
-                    'accuracy': accuracy,
-                    'precision': precision,
-                    'recall': recall,
-                    'f1_score': f1,
-                    'conf_matrix': conf_matrix,
-                    'class_report': class_report
-                }
-
-            if isinstance(model, nn.Module):
+            elif isinstance(model, nn.Module):
                 y_pred, true_labels = self._evaluate_model(model, self.X_test, self.y_test, name)
+            else:
+                continue  # Skip unsupported models
 
-                accuracy = accuracy_score(true_labels, y_pred)
-                precision = precision_score(true_labels, y_pred, average='weighted')
-                recall = recall_score(true_labels, y_pred, average='weighted')
-                f1 = f1_score(true_labels, y_pred, average='weighted')
-                conf_matrix = confusion_matrix(true_labels, y_pred)
-                class_report = classification_report(true_labels, y_pred)
+            if len(y_pred) == 0:
+                print(f"Skipping {name} due to missing predictions.")
+                continue  # Skip models that failed to produce predictions
 
-                print(f"\n{name} Metrics:")
-                print(f"Accuracy: {accuracy:.4f}")
-                print(f"Precision: {precision:.4f}")
-                print(f"Recall: {recall:.4f}")
-                print(f"F1-Score: {f1:.4f}")
-                print("\nConfusion Matrix:\n", conf_matrix)
-                print("\nClassification Report:\n", class_report)
+            accuracy = accuracy_score(self.y_test, y_pred)
+            precision = precision_score(self.y_test, y_pred, average='weighted', zero_division=0)
+            recall = recall_score(self.y_test, y_pred, average='weighted', zero_division=0)
+            f1 = f1_score(self.y_test, y_pred, average='weighted', zero_division=0)
+            conf_matrix = confusion_matrix(self.y_test, y_pred)
+            class_report = classification_report(self.y_test, y_pred)
 
-                perf_result[name] = {
-                    'accuracy': accuracy,
-                    'precision': precision,
-                    'recall': recall,
-                    'f1_score': f1,
-                    'conf_matrix': conf_matrix,
-                    'class_report': class_report
-                }
+            print(f"\n{name} Metrics:")
+            print(f"Accuracy: {accuracy:.4f}")
+            print(f"Precision: {precision:.4f}")
+            print(f"Recall: {recall:.4f}")
+            print(f"F1-Score: {f1:.4f}")
+            print("\nConfusion Matrix:\n", conf_matrix)
+            print("\nClassification Report:\n", class_report)
+
+            perf_result[name] = {
+                'accuracy': accuracy,
+                'precision': precision,
+                'recall': recall,
+                'f1_score': f1
+            }
+
+            # Log experiment with MLflow
+            self.track_versioning_experiment(name, accuracy, params=None)
+
+        # Ensure there's data before plotting
+        if perf_result:
+            self.plot_radar_chart(perf_result)
+        else:
+            print("No valid model metrics available, skipping radar chart.")
 
         return perf_result
 
+
     def _evaluate_model(self, model, X_test, y_test, model_type):
+        """Evaluates a single model and returns predictions."""
+        print(f"Evaluating {model_type} model...")
+
         model.eval()
-        correct, total = 0, 0
-        predictions_list, true_labels_list = [], []
+
+        X_test_tensor = torch.tensor(X_test.values, dtype=torch.float32).unsqueeze(1)
+        y_test_tensor = torch.tensor(y_test, dtype=torch.float32)
 
         with torch.no_grad():
-            inputs = torch.tensor(X_test, dtype=torch.float32).unsqueeze(1)
-            labels = torch.tensor(y_test, dtype=torch.float32).unsqueeze(1)
+            predictions = model(X_test_tensor)
+            predicted_labels = (predictions >= 0.5).float().squeeze().numpy()
 
-            outputs = model(inputs)
-            predictions = (outputs > 0.5).float()
+        return predicted_labels, y_test_tensor.numpy()
 
-            predictions_list.extend(predictions.cpu().numpy())
-            true_labels_list.extend(labels.cpu().numpy())
-            correct += (predictions == labels).sum().item()
-            total += labels.size(0)
 
-        accuracy = correct / total
-        predictions_array = np.array(predictions_list)
-        true_labels_array = np.array(true_labels_list)
-        return predictions_array, true_labels_array
+    def plot_radar_chart(self, model_metrics):
+        """
+        Generate a radar chart to compare model performances.
+        """
+        labels = list(model_metrics[next(iter(model_metrics))].keys())
+        num_vars = len(labels)
 
+        angles = [n / float(num_vars) * 2 * np.pi for n in range(num_vars)]
+        angles += angles[:1]
+
+        plt.figure(figsize=(8, 8))
+        ax = plt.subplot(111, polar=True)
+
+        for model_name, metrics in model_metrics.items():
+            values = list(metrics.values())
+            values += values[:1]  # Complete the loop
+            ax.plot(angles, values, label=model_name, linewidth=2)
+            ax.fill(angles, values, alpha=0.1)
+
+        ax.set_xticks(angles[:-1])
+        ax.set_xticklabels(labels)
+        plt.title(f'Model Comparison')
+        plt.legend(loc='upper right', bbox_to_anchor=(1.2, 1.1))
+        plt.savefig(
+            f"{BASE_DIR}notebooks/plots/models/radar_chart.png"
+        )
+        plt.show()
 
     def save_model(self, model_name):
         model = self.models.get(model_name)
@@ -254,10 +289,12 @@ class FraudDetectionModel:
             return
 
         if model_name in ['CNN', 'RNN', 'LSTM']:
-            torch.save(model.state_dict(), f"{BASE_DIR}/models/{model_name}.pth")
+            torch.save(
+                model.state_dict(),
+                f"{BASE_DIR}/models/{model_name}.pth")
         else:
             # Open the file in write binary mode ('wb')
-            with open(f"{BASE_DIR}/{model_name}.pkl", 'wb') as f:
+            with open(f"{BASE_DIR}/models/{model_name}.pkl", 'wb') as f:
                 pickle.dump(model, f)
 
         print(f'Model {model_name} saved successfuly!')
