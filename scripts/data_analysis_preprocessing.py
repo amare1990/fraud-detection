@@ -320,6 +320,7 @@ class FraudDataProcessor:
         # Calculate transaction velocity as the time difference (in seconds) between signup and first purchase
         self.data['transaction_velocity'] = (self.data['purchase_time'] - self.data['signup_time']).dt.total_seconds()
 
+
         # If the same device_id is used by multiple user_ids, it may indicate fraudulent accounts.
         self.data['device_shared_count'] = self.data.groupby('device_id')['user_id'].transform('nunique')
 
@@ -386,6 +387,13 @@ class FraudDataProcessor:
     def save_processed_data(
             self,
             output_path='/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/data/processed_data.csv'):
+
+        # Ensure unnecessary columns are droppped
+        excluded_columns = ['user_id', 'age', 'device_id', 'signup_time', 'purchase_time', 'ip_address', 'ip_int',
+                            'lower_bound_ip_address', 'upper_bound_ip_address',
+                            'lower_bound_ip_int', 'upper_bound_ip_int']
+
+        self.data = self.data.drop(columns=excluded_columns, errors='ignore')
         """Save the processed data to a CSV file."""
         self.data.to_csv(output_path, index=False)
         print(f"Processed data saved to {output_path}")

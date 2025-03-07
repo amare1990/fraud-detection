@@ -6,8 +6,8 @@ import torch
 import torch.nn as nn
 
 
-# RNN Model in PyTorch
 class RNNModel(nn.Module):
+    """RNN Model in PyTorch."""
     def __init__(self, input_size):
         super(RNNModel, self).__init__()
         self.rnn1 = nn.RNN(input_size=input_size, hidden_size=50, batch_first=True)

@@ -89,7 +89,7 @@ fraud_detection/
 │   └── test_api.py            # To test the Flask api
 
 
-        # Additional files for the API
+        # Files for the API
 ├── fraud_detection_dashboard/  # Folder for the dashboard app
 │   ├── app.py                # Main dashboard application script
 │   └── dashboard.py        # Additional files for the dashboard

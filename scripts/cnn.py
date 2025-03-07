@@ -6,8 +6,8 @@ import torch
 import torch.nn as nn
 
 
-# CNN Model in PyTorch
 class CNNModel(nn.Module):
+    """CNN Model in PyTorch."""
     def __init__(self, input_size):
         super(CNNModel, self).__init__()
         self.conv1 = nn.Conv1d(in_channels=1, out_channels=32, kernel_size=3, padding=1)

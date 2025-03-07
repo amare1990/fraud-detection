@@ -6,8 +6,8 @@ import torch
 import torch.nn as nn
 
 
-# LSTM Model in PyTorch
 class LSTMModel(nn.Module):
+    """LSTM Model in PyTorch."""
     def __init__(self, input_size):
         super(LSTMModel, self).__init__()
         self.lstm1 = nn.LSTM(input_size=input_size, hidden_size=50, batch_first=True)
@@ -19,5 +19,5 @@ class LSTMModel(nn.Module):
     def forward(self, x):
         x, _ = self.lstm1(x)
         x, _ = self.lstm2(x)
-        x = torch.relu(x[:, -1, :])  # Use the last time step output
+        x = torch.relu(x[:, -1, :])
         return self.sigmoid(self.fc1(x))
