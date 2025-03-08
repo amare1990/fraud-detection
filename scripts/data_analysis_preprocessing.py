@@ -24,11 +24,18 @@ class FraudDataProcessor:
         Initialize the class with the dataset.
         :param data: Pandas DataFrame
         """
-        self.data = pd.read_csv(data_path)
+        self.data_path = data_path
+        if self.data_path == f'{BASE_DIR}/data/Fraud_Data.csv':
+            self.data = pd.read_csv(data_path)
+            self.transaction_type = 'e-Commerce transaction'
+        elif self.data_path == f'{BASE_DIR}/data/credit_card.csv':
+            self.data = pd.read_csv(data_path)
+            self.transaction_type = 'Bank transaction'
 
     def overview_of_data(self):
         """Provide an overview of the dataset."""
-        print("Overview of the Data:")
+        print(f"\n\n{'*'*120}\n")
+        print(f"Overview of the from {self.transaction_type} Data:")
         print(f"Number of Rows: {self.data.shape[0]}")
         print(f"Number of Columns: {self.data.shape[1]}")
         print("\nData Types:")
@@ -38,10 +45,11 @@ class FraudDataProcessor:
 
     def summary_statistics(self):
         """Display summary statistics for numerical and categorical features."""
-        print("Summary Statistics for numerical features:")
+        print(f"\n\n{'*'*120}\n")
+        print(f"Summary Statistics for numerical features from {self.transaction_type} data:")
         print(self.data.describe())
         print("\n\n")
-        print("Summary Statistics for categorical features:")
+        print(f"Summary Statistics for categorical features from {self.transaction_type} data:")
         print(self.data.describe(include=[object, 'category']))
         print("\n")
 
@@ -51,22 +59,36 @@ class FraudDataProcessor:
 
     def identify_missing_values(self):
         """Identify missing values in the dataset."""
-        print("Missing Values:")
+        print(f"\n\n{'*'*120}\n")
+        print(f"Missing Values in {self.transaction_type} data:")
         missing_values = self.data.isnull().sum()
         print(missing_values[missing_values > 0])
         print("\n")
 
     def outlier_detection(self):
         """Use box plots to identify outliers in numerical features."""
-        print("Outlier Detection:")
-        numerical_columns = self.retrieve_numerical_columns()
-        for column in numerical_columns:
+        print(f"\n\n{'*'*120}\n")
+        print(f"Outlier Detection in {self.transaction_type} data:")
+        if self.transaction_type == 'e-Commerce transaction':
+            numerical_columns = self.retrieve_numerical_columns()
+            for column in numerical_columns:
+                plt.figure(figsize=(6, 4))
+                sns.boxplot(x=self.data[column])
+                plt.title(f"Boxplot of {column}")
+                plt.xlabel(column)
+                plt.savefig(
+                    f'{BASE_DIR}/notebooks/plots/outliers/outlier_{column}.png',
+                    dpi=300,
+                    bbox_inches='tight')
+                plt.show()
+        elif self.transaction_type == 'Bank transaction':
+            col_credit_card = ['Amount']
             plt.figure(figsize=(6, 4))
-            sns.boxplot(x=self.data[column])
-            plt.title(f"Boxplot of {column}")
-            plt.xlabel(column)
+            sns.boxplot(x=self.data[col_credit_card])
+            plt.title(f"Boxplot of {col_credit_card}")
+            plt.xlabel(col_credit_card)
             plt.savefig(
-                f'{BASE_DIR}/notebooks/plots/outliers/outlier_{column}.png',
+                f'{BASE_DIR}/notebooks/plots/outliers/outlier_{self.transaction_type}_{column}.png',
                 dpi=300,
                 bbox_inches='tight')
             plt.show()
@@ -76,9 +98,9 @@ class FraudDataProcessor:
         Handle missing values in the dataset. Features with missing values above the threshold are dropped.
         Otherwise, missing values are handled using imputation (mean, median, or most_frequent).
         """
-        print("\n\n*****************************************************\n")
+        print(f"\n\n{'*'*120}\n")
         print(
-            f"Handling missing values using {strategy} strategy with a threshold of {threshold * 100}%...")
+            f"Handling missing values in {self.transaction_type} data using {strategy} strategy with a threshold of {threshold * 100}%...")
 
         initial_row_count = len(self.data)
 
@@ -131,131 +153,188 @@ class FraudDataProcessor:
 
     def remove_duplicates(self):
         """Remove duplicate rows from the dataset."""
+        print(f"{'*'*120}")
+        initial_row_count = len(self.data)
+        print(f"Removing duplicates from {self.transaction_type} data...")
         self.data.drop_duplicates(inplace=True)
-        print("Duplicates removed.")
+        final_row_count = len(self.data)
+        print(f"Duplicates removed. {initial_row_count - final_row_count} rows removed due to duplicacy.")
 
     def correct_data_types(self):
         """Convert columns to appropriate data types."""
-        print(
-            f"Data type of signup_time before correction: {self.data['signup_time'].dtype}")
-        print(
-            f"Data type of purchase_time before correction: {self.data['purchase_time'].dtype}")
-        self.data['signup_time'] = pd.to_datetime(self.data['signup_time'])
-        self.data['purchase_time'] = pd.to_datetime(self.data['purchase_time'])
-        print("Data types corrected.")
-        print(
-            f"Data type of signup_time after correction: {self.data['signup_time'].dtype}")
-        print(
-            f"Data type of purchase_time after correction: {self.data['purchase_time'].dtype}")
+        print(f"{'*'*120}")
+        if self.transaction_type == 'e-Commerce transaction':
+            print(
+                f"Data type of signup_time before correction: {self.data['signup_time'].dtype}")
+            print(
+                f"Data type of purchase_time before correction: {self.data['purchase_time'].dtype}")
+            self.data['signup_time'] = pd.to_datetime(self.data['signup_time'])
+            self.data['purchase_time'] = pd.to_datetime(self.data['purchase_time'])
+            print("Data types corrected.")
+            print(
+                f"Data type of signup_time after correction: {self.data['signup_time'].dtype}")
+            print(
+                f"Data type of purchase_time after correction: {self.data['purchase_time'].dtype}")
+        elif self.transaction_type == 'bank transaction':
+            print(f"Data type correction is not applicable in {self.transaction_type} data.")
+        else:
+            print("Unknown data")
 
     def univariate_analysis(self):
         """Perform univariate analysis on numerical columns."""
-        print("Univariate Analysis starting: numerical columns")
-        numerical_columns = self.retrieve_numerical_columns()
-        for col in numerical_columns:
+        print(f"\n\n{'*'*120}\n")
+        print(f"Univariate Analysis starting: numerical columns - {self.transaction_type} data...")
+
+        if self.transaction_type == 'e-Comerce transaction':
+            numerical_columns = self.retrieve_numerical_columns()
+            for col in numerical_columns:
+                plt.figure(figsize=(10, 6))
+                sns.histplot(self.data[col], kde=True)
+                plt.title(f"Univariate Analysis - {col}")
+                plt.xlabel(col)
+                plt.ylabel("Frequency")
+                plt.savefig(
+                    f'{BASE_DIR}/notebooks/plots/univariante/numerical/hist_{col}.png',
+                    dpi=300,
+                    bbox_inches='tight')
+                plt.show()
+
+        elif self.transaction_type == 'bank transaction':
+            col = ['Time', 'Amount']
             plt.figure(figsize=(10, 6))
             sns.histplot(self.data[col], kde=True)
             plt.title(f"Univariate Analysis - {col}")
             plt.xlabel(col)
             plt.ylabel("Frequency")
             plt.savefig(
-                f'{BASE_DIR}/notebooks/plots/univariante/numerical/hist_{col}.png',
+                f'{BASE_DIR}/notebooks/plots/univariante/numerical/hist_{self.transaction_type}_{col}.png',
                 dpi=300,
                 bbox_inches='tight')
             plt.show()
 
+
         """Perform univariante analysis on categorical columns."""
-        print("Univariate Analysis for categorical columns starting...")
-        categorical_columns = self.data.select_dtypes(
-            include=['object', 'category']).columns.tolist()
-        for col in categorical_columns:
-            plt.figure(figsize=(10, 6))
-            sns.countplot(x=self.data[col])
-            plt.title(f"Univariante Analysis - {col}")
-            plt.xlabel(col)
-            plt.ylabel("Count")
-            plt.savefig(
-                f'{BASE_DIR}/notebooks/plots/univariante/categorical/countplot_{col}.png',
-                dpi=300,
-                bbox_inches='tight')
-            plt.show()
+        print(f"Univariate Analysis for categorical columns in {self.transaction_type} starting...")
+        if self.transaction_type == "e-Commerce transaction":
+            categorical_columns = self.data.select_dtypes(
+                include=['object', 'category']).columns.tolist()
+            for col in categorical_columns:
+                plt.figure(figsize=(10, 6))
+                sns.countplot(x=self.data[col])
+                plt.title(f"Univariante Analysis - {col}")
+                plt.xlabel(col)
+                plt.ylabel("Count")
+                plt.savefig(
+                    f'{BASE_DIR}/notebooks/plots/univariante/categorical/countplot_{col}.png',
+                    dpi=300,
+                    bbox_inches='tight')
+                plt.show()
+
+        elif self.transaction_type == "bank transaction":
+            print(f"There is no categorical colmns in {self.transaction_type} data. So it is not applicable")
+        else:
+            print("Unknown data")
 
     def bivariate_analysis(self):
         """Perform bivariate analysis (correlation, pair plots and box plot)."""
+        print(f"\n\n{'*'*120}\n")
         # Correlation Heatmap
-        print("Correlation Heatmap:")
-        # Convert list to DataFrame
-        numerical_columns = self.data[self.retrieve_numerical_columns()]
-        plt.figure(figsize=(12, 8))
-        corr_matrix = numerical_columns.corr()
-        sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f")
-        plt.title("Correlation Heatmap")
-        plt.savefig(
-            f'{BASE_DIR}/notebooks/plots/heatmap.png',
-            dpi=300,
-            bbox_inches='tight')
-        plt.show()
+        print(f"Correlation Heatmap for {self.transaction_type} data:")
 
-        # Pair Plot (only a subset of columns for better visualization)
-        print("\nBivariate Analysis - Pair Plot: Starting...")
-        numerical_columns = self.retrieve_numerical_columns()
-        # Adjust number of columns to display in pair plot
-        subset = numerical_columns[:5]
-        sns.pairplot(
-            self.data[subset],
-            diag_kind='kde',
-            plot_kws={
-                'alpha': 0.5})
-        plt.title("Bivariate Analysis - Pair Plot")
-        plt.savefig(
-            f'{BASE_DIR}/notebooks/plots/bivariante/pairplot.png',
-            dpi=300,
-            bbox_inches='tight')
-        plt.show()
-
-        # Bivariate analysis on categorical
-        print("Bivariate Analysis - Boxplot:")
-        # categorical_columns = self.data.select_dtypes(include=['object', 'category']).columns.tolist()
-        categorical_columns = ['browser', 'source', 'sex']
-        for col in categorical_columns:
-            # if col != 'class':  # Avoid 'class' as target variable
-            plt.figure(figsize=(10, 6))
-            sns.boxplot(x=self.data[col], y=self.data['class'])
-            plt.title(f"Bivariate Analysis - {col} vs class")
+        if self.transaction_type == 'e-Commerce transaction':
+            numerical_columns = self.data[self.retrieve_numerical_columns()]
+            plt.figure(figsize=(12, 8))
+            corr_matrix = numerical_columns.corr()
+            sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+            plt.title("Correlation Heatmap")
             plt.savefig(
-                f'{BASE_DIR}/notebooks/plots/bivariante/categ/boxplot_{col}.png',
+                f'{BASE_DIR}/notebooks/plots/heatmap.png',
                 dpi=300,
                 bbox_inches='tight')
             plt.show()
+        elif self.transaction_type == 'bank transaction':
+            columns = ['Amount', 'Class']
+            plt.figure(figsize=(12, 8))
+            corr_matrix = columns.corr()
+            sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+            plt.title("Correlation Heatmap")
+            plt.savefig(
+                f'{BASE_DIR}/notebooks/plots/heatmap_{self.transaction_type}.png',
+                dpi=300,
+                bbox_inches='tight')
+            plt.show()
+
+        # Pair Plot (only a subset of columns for better visualization)
+        print(f"\nBivariate Analysis - Pair Plot for {self.transaction_type}: Starting...")
+        if self.transaction_type == 'e-Commerce transaction':
+            numerical_columns = self.retrieve_numerical_columns()
+            # Adjust number of columns to display in pair plot
+            subset = numerical_columns[:5]
+            sns.pairplot(
+                self.data[subset],
+                diag_kind='kde',
+                plot_kws={
+                    'alpha': 0.5})
+            plt.title("Bivariate Analysis - Pair Plot")
+            plt.savefig(
+                f'{BASE_DIR}/notebooks/plots/bivariante/pairplot.png',
+                dpi=300,
+                bbox_inches='tight')
+            plt.show()
+
+            # Bivariate analysis on categorical
+            print(f"Bivariate Analysis - Boxplot for {self.transaction_type} data starting...")
+            categorical_columns = ['browser', 'source', 'sex']
+            for col in categorical_columns:
+                plt.figure(figsize=(10, 6))
+                sns.boxplot(x=self.data[col], y=self.data['class'])
+                plt.title(f"Bivariate Analysis - {col} vs class")
+                plt.savefig(
+                    f'{BASE_DIR}/notebooks/plots/bivariante/categ/boxplot_{col}.png',
+                    dpi=300,
+                    bbox_inches='tight')
+                plt.show()
+        elif self.transaction_type == 'bank transaction':
+            print(f"In {self.transaction_type} data, pairpolot and bivariante analysis using boxplot as a categorical data is not that much..already curated data.")
+        else:
+            print("Unknown data")
 
     # Bivariante analysis between categorical variables
     def bivariate_categorical_analysis(self):
         """Perform bivariate analysis between two categorical columns."""
-        print("Bivariate Analysis: contigency table - browser vs source: starting")
-        # Create a contingency table (cross-tabulation)
-        contingency_table = pd.crosstab(
-            self.data['browser'], self.data['source'])
-        print("Contingency Table (browser vs source):")
-        print(contingency_table)
+        print(f"\n\n{'*'*120}\n")
+        print(f"Bivariate Analysis: contigency table - browser vs source for {self.transaction_type} data: starting")
 
-        # Visualize the relationship using a stacked bar chart (countplot)
-        print("Bivariate Analysis - browser vs source: countplot plotting")
-        plt.figure(figsize=(10, 6))
-        sns.countplot(x='browser', hue='source', data=self.data)
-        plt.title("Bivariate Analysis - browser vs source")
-        plt.savefig(
-            f'{BASE_DIR}/notebooks/plots/bivariante/categ_stacked_bar_chart.png',
-            dpi=300,
-            bbox_inches='tight')
-        plt.show()
+        if self.transaction_type == 'e-Commerce transaction':
+            # Create a contingency table (cross-tabulation)
+            contingency_table = pd.crosstab(
+                self.data['browser'], self.data['source'])
+            print("Contingency Table (browser vs source):")
+            print(contingency_table)
 
-        # Optional: Chi-square test of independence
-        chi2, p, dof, expected = chi2_contingency(contingency_table)
-        print(f"Chi-Square Test p-value: {p}")
-        if p < 0.05:
-            print("The variables are likely dependent.")
+            # Visualize the relationship using a stacked bar chart (countplot)
+            print("Bivariate Analysis - browser vs source: countplot plotting")
+            plt.figure(figsize=(10, 6))
+            sns.countplot(x='browser', hue='source', data=self.data)
+            plt.title("Bivariate Analysis - browser vs source")
+            plt.savefig(
+                f'{BASE_DIR}/notebooks/plots/bivariante/categ_stacked_bar_chart.png',
+                dpi=300,
+                bbox_inches='tight')
+            plt.show()
+
+            # Optional: Chi-square test of independence
+            chi2, p, dof, expected = chi2_contingency(contingency_table)
+            print(f"Chi-Square Test p-value: {p}")
+            if p < 0.05:
+                print("The variables are likely dependent.")
+            else:
+                print("The variables are likely independent.")
+        elif self.transaction_type == 'bank transaction':
+            print(f"Bivariante analysis for {self.transaction_type} data is not applicabel-No categorical data")
         else:
-            print("The variables are likely independent.")
+            print("Unknown data")
+
 
     def ip_to_integer(self, ip):
         """Convert an IP address stored as float64 to an integer."""
@@ -272,6 +351,11 @@ class FraudDataProcessor:
 
     def merge_datasets_for_geolocation(self):
         """Merge Fraud_Data.csv with IpAddress_to_Country.csv using IP ranges."""
+        if self.transaction_type != 'e-Commerce transaction':
+            return
+
+        print(f"{'*'*120}")
+        print(f"Merging data: ip_address from {self.transaction_type} data with ip address range from IpAddress_to_Country.csv")
         # Convert IP addresses to integer format
         self.data['ip_int'] = self.data['ip_address'].apply(self.ip_to_integer)
 
@@ -325,7 +409,13 @@ class FraudDataProcessor:
 
     def feature_engineering(self):
         """Create new features like hours_of_day, hours_of_week and calculate transaction frequency and time-based features."""
-        print("Feature engineering starting...")
+
+        # Feature engineering is on e-Commerce transaction data the creditcard.csv is already curated.
+        if self.transaction_type != 'e-Commerce transaction':
+            return
+
+        print(f"\n\n{'*'*120}\n")
+        print(f"Feature engineering on {self.transaction_type} starting...")
 
         self.data['hour_of_day'] = self.data['purchase_time'].dt.hour
         self.data['day_of_week'] = self.data['purchase_time'].dt.dayofweek
@@ -360,14 +450,22 @@ class FraudDataProcessor:
 
     def normalize_and_scale(self):
         """Normalize and scale numerical features."""
-        print("Normalizing and scaling numerical features... starting")
+        print(f"\n\n{'*'*120}\n")
+        print(f"Normalizing and scaling numerical features on {self.transaction_type}... starting")
         scaler = MinMaxScaler()
-        scalable_columns = [
-            'transaction_frequency',
-            'transaction_velocity',
-            'purchase_value',
-            'device_shared_count']
-        print(f"Scalable columns: {scalable_columns}")
+        scalable_columns = []
+        if self.transaction_type == 'e-Commerce transaction':
+            scalable_columns = [
+                'transaction_frequency',
+                'transaction_velocity',
+                'purchase_value',
+                'device_shared_count']
+        elif self.transaction_type == 'bank transaction':
+            scalable_columns = ['Amount']
+        else:
+            print("Unknown data")
+            return
+        print(f"Scalable columns for {self.transaction_type} data: {scalable_columns}")
         self.data[scalable_columns] = scaler.fit_transform(
             self.data[scalable_columns])
         print("Normalization and scaling done.")
@@ -377,20 +475,24 @@ class FraudDataProcessor:
         - 'sex' using Label Encoding.
         - 'browser', 'source', 'country', 'age_group' using One-Hot Encoding.
         """
-        print("\n\n*****************************************************\n")
-        print("Encoding selected categorical features... starting")
+        if self.transaction_type != 'e-Commerce transaction':
+            print("Unknown data and no categorical columns for creditcard.csv data")
+            return
+
+        print(f"\n\n{'*'}*120\n")
+        print(f"Encoding selected categorical features from {self.transaction_type} starting...")
 
         label_encoder = LabelEncoder()
         onehot_encoder = OneHotEncoder(
             sparse_output=False, handle_unknown='ignore')
 
         # Define categorical feature groups
-        label_encoding_column = 'sex'  # Label encode 'sex'
+        label_encoding_column = 'sex'
         onehot_encoding_columns = [
             'browser',
             'source',
             'country',
-            'age_group']  # One-hot encode the rest
+            'age_group']
 
         # Ensure only existing columns are selected
         onehot_encoding_columns = [
@@ -437,10 +539,18 @@ class FraudDataProcessor:
             self,
             output_path=f'{BASE_DIR}/data/processed_data.csv'):
 
-        # Ensure unnecessary columns are droppped
-        excluded_columns = ['user_id', 'age', 'device_id', 'signup_time', 'purchase_time', 'ip_address', 'ip_int',
-                            'lower_bound_ip_address', 'upper_bound_ip_address',
-                            'lower_bound_ip_int', 'upper_bound_ip_int']
+        print(f"\n\n{'*'*120}\n")
+        if self.transaction_type == 'bank transaction':
+            print("All creditcard.csv is already curated. No dropping of columns.")
+        elif self.transaction_type == 'e-Commerce transaction':
+
+            # Ensure unnecessary columns are droppped
+            excluded_columns = ['user_id', 'age', 'device_id', 'signup_time', 'purchase_time', 'ip_address', 'ip_int',
+                                'lower_bound_ip_address', 'upper_bound_ip_address',
+                                'lower_bound_ip_int', 'upper_bound_ip_int']
+
+        else:
+            print("Unknown data")
 
         self.data = self.data.drop(columns=excluded_columns, errors='ignore')
         """Save the processed data to a CSV file."""
