@@ -14,9 +14,8 @@ import matplotlib.pyplot as plt
 
 import random
 
+
 # Set random seed for reproducibility
-
-
 def set_seed(seed_value=42):
     """Set seed for reproducibility across all necessary libraries."""
     random.seed(seed_value)  # Python random
@@ -36,14 +35,16 @@ def set_seed(seed_value=42):
 # Call this before anything random happen
 set_seed(42)
 
+BASE_DIR = '/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection'
+
 
 class SMOTifiedGANBalancer:
     """
     A class to balance imbalanced fraud datasets using SMOTE followed by a GAN.
     """
 
-    def __init__(self, latent_dim=16, num_epochs=100,
-                 batch_size=64, lr=0.0002):
+    def __init__(self, latent_dim=16, num_epochs=150,
+                 batch_size=64, lr=0.0001):
         """
         Initialize the balancer with hyperparameters.
 
@@ -179,24 +180,23 @@ class SMOTifiedGANBalancer:
 
         print("GAN Training Completed. Generating Synthetic Data...")
 
-        # # # After training, plot the loss curves:
-        # plt.figure(figsize=(8, 5))
-        # # epochs = list(range(1, self.num_epochs + 1))  # Ensure x-axis matches y-axis
-        # epochs = list(range(1, len(g_losses) + 1))  # Ensure x-axis matches y-axis
-        # plt.plot(epochs, g_losses, label="Generator Loss")
-        # plt.plot(epochs, d_losses, label="Discriminator Loss")
+        # Step 3. After training, plot the loss curves:
+        plt.figure(figsize=(8, 5))
+        epochs = list(range(1, len(g_losses) + 1))
+        plt.plot(epochs, g_losses, label="Generator Loss")
+        plt.plot(epochs, d_losses, label="Discriminator Loss")
 
-        # plt.xlabel("Epoch")
-        # plt.ylabel("Loss")
-        # plt.title("GAN Training Loss Curve")
-        # plt.legend()
-        # plt.savefig(
-        #     "/content/drive/MyDrive/week_8-9/plots/class_balancer/loss_curve_GAN.png",
-        #     dpi=300,
-        #     bbox_inches="tight"
-        #     )
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss")
+        plt.title("GAN Training Loss Curve")
+        plt.legend()
+        plt.savefig(
+            f"{BASE_DIR}/notebooks/plots/class_balancer/loss_curve_GAN.png",
+            dpi=300,
+            bbox_inches="tight"
+            )
 
-        # plt.show()
+        plt.show()
 
         # Step 4: Generate Synthetic Data
         num_synthetic_samples = sum(y_resampled == 0)
