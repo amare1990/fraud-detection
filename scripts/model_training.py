@@ -24,9 +24,6 @@ from scripts.cnn import CNNModel
 from scripts.rnn import RNNModel
 from scripts.lstm import LSTMModel
 
-BASE_DIR = "/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection"
-
-
 # Set random seed for reproducibility
 def set_seed(seed_value=42):
     """Set seed for reproducibility across all necessary libraries."""
@@ -45,6 +42,9 @@ def set_seed(seed_value=42):
 
 # Call this before anything random happen
 set_seed(42)
+
+
+BASE_DIR = "/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection"
 
 
 class FraudDetectionModel:
@@ -66,28 +66,38 @@ class FraudDetectionModel:
         X = self.data.drop(columns=[target_col]).values
         y = self.data[target_col].values
 
+        # Split the data into training (balanced) and test (imbalanced) sets
+        _, X_test, _, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42, stratify=y
+        )
+
         # Apply SMOTified+GAN for balancing the dataset
         X_balanced, y_balanced = self.balancer.balance_data(X, y)
 
         # Create a new DataFrame with the balanced data
-        self.data = pd.DataFrame(
-            X_balanced, columns=self.data.drop(
-                columns=[target_col]).columns)
+        self.data = pd.DataFrame(X_balanced, columns=self.data.drop(columns=[target_col]).columns)
         self.data[target_col] = y_balanced
 
         # Save the balanced data to a CSV file
         output_path = f'{BASE_DIR}/data/balanced_processed_data.csv'
         self.data.to_csv(output_path, index=False)
-        print(f"Balanced and processed data saved as {output_path}")
-        print("Data balancing completed successfully.")
+        print(f"Balanced and Processed data saved to {output_path}")
+        print("Data Balancing Completed Successfully.")
+
+        # Store the test data (imbalanced) for later evaluation
+        self.X_test = X_test
+        self.y_test = y_test
 
     def data_preparation(self, test_size=0.2):
         print(f"\n\n{'*'*100}\n")
         print("Data preparation starting...")
+
+        # Prepare the features and target
         X = self.data.drop(columns=[self.target_column])
         y = self.data[self.target_column].values
 
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+        # Split the balanced data into training and test sets for model training
+        self.X_train, _, self.y_train, _ = train_test_split(
             X, y, test_size=test_size, random_state=42, stratify=y
         )
         print("Data prepared: Train and test sets created.")
@@ -223,7 +233,9 @@ class FraudDetectionModel:
                 'accuracy': accuracy,
                 'precision': precision,
                 'recall': recall,
-                'f1_score': f1
+                'f1_score': f1,
+                'conf_matrix': conf_matrix,
+                'class_report': class_report
             }
 
             # Log experiment with MLflow
@@ -269,7 +281,7 @@ class FraudDetectionModel:
 
         for model_name, metrics in model_metrics.items():
             values = list(metrics.values())
-            values += values[:1]  # Complete the loop
+            values += values[:1]
             ax.plot(angles, values, label=model_name, linewidth=2)
             ax.fill(angles, values, alpha=0.1)
 
@@ -278,7 +290,7 @@ class FraudDetectionModel:
         plt.title(f'Model Comparison')
         plt.legend(loc='upper right', bbox_to_anchor=(1.2, 1.1))
         plt.savefig(
-            f"{BASE_DIR}notebooks/plots/models/radar_chart.png"
+            f"{BASE_DIR}/notebooks/plots/models/radar_chart.png"
         )
         plt.show()
 
