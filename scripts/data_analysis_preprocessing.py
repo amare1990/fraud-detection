@@ -7,6 +7,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+import geopandas as gpd
+import plotly.express as px
+
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder, OneHotEncoder
 
@@ -17,20 +20,30 @@ BASE_DIR = "/home/am/Documents/Software Development/10_Academy Training/week_8-9
 
 
 class FraudDataProcessor:
-    def __init__(
-            self,
-            data_path=f'{BASE_DIR}/data/Fraud_Data.csv'):
+    def __init__(self, data_path=None):
         """
         Initialize the class with the dataset.
-        :param data: Pandas DataFrame
+        :param data_path: Path to the dataset CSV file.
         """
+        # Set default path if None is provided
+        if data_path is None:
+            data_path = f'{BASE_DIR}/Fraud_Data.csv'
+
         self.data_path = data_path
-        if self.data_path == f'{BASE_DIR}/data/Fraud_Data.csv':
-            self.data = pd.read_csv(data_path)
+
+        # Check the dataset type and read the data
+        if 'Fraud_Data.csv' in self.data_path:
+            self.data = pd.read_csv(self.data_path)
             self.transaction_type = 'e-Commerce transaction'
-        elif self.data_path == f'{BASE_DIR}/data/credit_card.csv':
-            self.data = pd.read_csv(data_path)
+        elif 'creditcard.csv' in self.data_path:
+            self.data = pd.read_csv(self.data_path)
             self.transaction_type = 'Bank transaction'
+        elif 'IpAddress_to_Country.csv' in self.data_path:
+            self.data = pd.read_csv(self.data_path)
+            self.transaction_type = 'Geolocation'
+        else:
+            raise ValueError("Unknown dataset. Please provide a valid data file.")
+
 
     def overview_of_data(self):
         """Provide an overview of the dataset."""
@@ -46,9 +59,14 @@ class FraudDataProcessor:
     def summary_statistics(self):
         """Display summary statistics for numerical and categorical features."""
         print(f"\n\n{'*'*120}\n")
+        if self.transaction_type == 'Bank transaction':
+            print(f"No categorical colmns in 'creditcard.csv' and thus summary statistics for categorical data is not applicable")
+            return
+
         print(f"Summary Statistics for numerical features from {self.transaction_type} data:")
         print(self.data.describe())
         print("\n\n")
+
         print(f"Summary Statistics for categorical features from {self.transaction_type} data:")
         print(self.data.describe(include=[object, 'category']))
         print("\n")
@@ -82,13 +100,13 @@ class FraudDataProcessor:
                     bbox_inches='tight')
                 plt.show()
         elif self.transaction_type == 'Bank transaction':
-            col_credit_card = ['Amount']
+            col_credit_card = 'Amount'
             plt.figure(figsize=(6, 4))
             sns.boxplot(x=self.data[col_credit_card])
             plt.title(f"Boxplot of {col_credit_card}")
             plt.xlabel(col_credit_card)
             plt.savefig(
-                f'{BASE_DIR}/notebooks/plots/outliers/outlier_{self.transaction_type}_{column}.png',
+                f'{BASE_DIR}/notebooks/plots/outliers/outlier_{self.transaction_type}_{col_credit_card}.png',
                 dpi=300,
                 bbox_inches='tight')
             plt.show()
@@ -153,16 +171,18 @@ class FraudDataProcessor:
 
     def remove_duplicates(self):
         """Remove duplicate rows from the dataset."""
-        print(f"{'*'*120}")
+        print(f"\n\n{'*'*120}\n")
         initial_row_count = len(self.data)
         print(f"Removing duplicates from {self.transaction_type} data...")
+        print(f"Shape of data before removing duplicates: {self.data.shape}")
         self.data.drop_duplicates(inplace=True)
         final_row_count = len(self.data)
         print(f"Duplicates removed. {initial_row_count - final_row_count} rows removed due to duplicacy.")
+        print(f"Shape of data after removing duplicates: {self.data.shape}")
 
     def correct_data_types(self):
         """Convert columns to appropriate data types."""
-        print(f"{'*'*120}")
+        print(f"\n\n{'*'*120}\n")
         if self.transaction_type == 'e-Commerce transaction':
             print(
                 f"Data type of signup_time before correction: {self.data['signup_time'].dtype}")
@@ -175,7 +195,7 @@ class FraudDataProcessor:
                 f"Data type of signup_time after correction: {self.data['signup_time'].dtype}")
             print(
                 f"Data type of purchase_time after correction: {self.data['purchase_time'].dtype}")
-        elif self.transaction_type == 'bank transaction':
+        elif self.transaction_type == 'Bank transaction' or self.transaction_type == 'Geolocation':
             print(f"Data type correction is not applicable in {self.transaction_type} data.")
         else:
             print("Unknown data")
@@ -198,19 +218,48 @@ class FraudDataProcessor:
                     dpi=300,
                     bbox_inches='tight')
                 plt.show()
+        elif self.transaction_type == 'Geolocation':
+            print("Performing Univariate Analysis for Geolocation data...")
+            numerical_columns = ['lower_bound_ip_address', 'upper_bound_ip_address']
+            for col in numerical_columns:
+                plt.figure(figsize=(10, 6))
+                sns.histplot(self.data[col], kde=True)
+                plt.title(f"Univariate Analysis - {col}")
+                plt.xlabel(col)
+                plt.ylabel("Frequency")
+                plt.savefig(
+                    f'{BASE_DIR}/notebooks/plots/univariante/numerical/hist_{self.transaction_type}_{col}.png',
+                    dpi=300,
+                    bbox_inches='tight')
+                plt.show()
 
-        elif self.transaction_type == 'bank transaction':
-            col = ['Time', 'Amount']
-            plt.figure(figsize=(10, 6))
-            sns.histplot(self.data[col], kde=True)
-            plt.title(f"Univariate Analysis - {col}")
-            plt.xlabel(col)
-            plt.ylabel("Frequency")
-            plt.savefig(
-                f'{BASE_DIR}/notebooks/plots/univariante/numerical/hist_{self.transaction_type}_{col}.png',
-                dpi=300,
-                bbox_inches='tight')
-            plt.show()
+            print(f"Univariate Analysis for categorical columns in {self.transaction_type} starting...")
+            categorical_columns = ['country']  # Assuming country is a categorical column
+            for col in categorical_columns:
+                plt.figure(figsize=(10, 6))
+                sns.countplot(x=self.data[col])
+                plt.title(f"Univariate Analysis - {col}")
+                plt.xlabel(col)
+                plt.ylabel("Count")
+                plt.savefig(
+                    f'{BASE_DIR}/notebooks/plots/univariante/categorical/countplot_{col}.png',
+                    dpi=300,
+                    bbox_inches='tight')
+                plt.show()
+
+        elif self.transaction_type == 'Bank transaction':
+            columns = ['Time', 'Amount']
+            for col in columns:
+              plt.figure(figsize=(10, 6))
+              sns.histplot(self.data[col], kde=True)
+              plt.title(f"Univariate Analysis - {col}")
+              plt.xlabel(col)
+              plt.ylabel("Frequency")
+              plt.savefig(
+                  f'{BASE_DIR}/notebooks/plots/univariante/numerical/hist_{self.transaction_type}_{col}.png',
+                  dpi=300,
+                  bbox_inches='tight')
+              plt.show()
 
 
         """Perform univariante analysis on categorical columns."""
@@ -230,7 +279,7 @@ class FraudDataProcessor:
                     bbox_inches='tight')
                 plt.show()
 
-        elif self.transaction_type == "bank transaction":
+        elif self.transaction_type == "Bank transaction":
             print(f"There is no categorical colmns in {self.transaction_type} data. So it is not applicable")
         else:
             print("Unknown data")
@@ -252,17 +301,28 @@ class FraudDataProcessor:
                 dpi=300,
                 bbox_inches='tight')
             plt.show()
-        elif self.transaction_type == 'bank transaction':
-            columns = ['Amount', 'Class']
+        elif self.transaction_type == 'Bank transaction':
+            columns = ['Time', 'Amount', 'Class']
+
+            # Check if all required columns exist in the DataFrame
+            if not all(col in self.data.columns for col in columns):
+                raise ValueError("One or more required columns are missing from the dataset.")
+
+            # Compute correlation matrix
+            corr_matrix = self.data[columns].corr()
+
+            # Plot heatmap
             plt.figure(figsize=(12, 8))
-            corr_matrix = columns.corr()
             sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f")
             plt.title("Correlation Heatmap")
+
+            # Save the figure
             plt.savefig(
                 f'{BASE_DIR}/notebooks/plots/heatmap_{self.transaction_type}.png',
                 dpi=300,
                 bbox_inches='tight')
             plt.show()
+
 
         # Pair Plot (only a subset of columns for better visualization)
         print(f"\nBivariate Analysis - Pair Plot for {self.transaction_type}: Starting...")
@@ -294,8 +354,39 @@ class FraudDataProcessor:
                     dpi=300,
                     bbox_inches='tight')
                 plt.show()
-        elif self.transaction_type == 'bank transaction':
+        elif self.transaction_type == 'Bank transaction':
             print(f"In {self.transaction_type} data, pairpolot and bivariante analysis using boxplot as a categorical data is not that much..already curated data.")
+
+        elif self.transaction_type == 'Geolocation':
+            print(f"Performing Bivariate Analysis for Geolocation data...")
+
+            # Correlation between the IP address ranges (if applicable)
+            ip_columns = ['lower_bound_ip_address', 'upper_bound_ip_address']
+            corr_matrix = self.data[ip_columns].corr()
+
+            # Plot correlation heatmap
+            plt.figure(figsize=(12, 8))
+            sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+            plt.title("Correlation Heatmap for Geolocation Data")
+            plt.savefig(
+                f'{BASE_DIR}/notebooks/plots/heatmap_{self.transaction_type}.png',
+                dpi=300,
+                bbox_inches='tight')
+            plt.show()
+
+            # Boxplot for country vs IP range size (if appropriate)
+            self.data['range_size'] = self.data['upper_bound_ip_address'] - self.data['lower_bound_ip_address']
+            plt.figure(figsize=(10, 6))
+            sns.boxplot(x=self.data['country'], y=self.data['range_size'])
+            plt.title(f"Bivariate Analysis - Country vs IP Range Size")
+            plt.xlabel('Country')
+            plt.ylabel('IP Range Size')
+            plt.xticks(rotation=90)
+            plt.savefig(
+                f'{BASE_DIR}/notebooks/plots/bivariante/categ/boxplot_country_ip_range.png',
+                dpi=300,
+                bbox_inches='tight')
+            plt.show()
         else:
             print("Unknown data")
 
@@ -330,10 +421,70 @@ class FraudDataProcessor:
                 print("The variables are likely dependent.")
             else:
                 print("The variables are likely independent.")
-        elif self.transaction_type == 'bank transaction':
+        elif self.transaction_type == 'Bank transaction':
             print(f"Bivariante analysis for {self.transaction_type} data is not applicabel-No categorical data")
         else:
             print("Unknown data")
+
+
+    def geolocation_summary_plots(self):
+        """Generate summary plots for Geolocation data."""
+        print(f"\n\n{'*'*120}\n")
+        if self.transaction_type != 'Geolocation':
+            print("This method is only applicable for Geolocation data, 'IPAddress_to_Country.csv'. Skipping...")
+            return
+        print(f"Generating Geolocation Summary Plots for {self.transaction_type} data...")
+
+        if self.transaction_type == 'Geolocation':
+            # 1. Bar Plot: Number of IP ranges per country
+            print("Generating Bar Plot - Number of IP Ranges per Country...")
+            ip_count_per_country = self.data['country'].value_counts()
+            plt.figure(figsize=(12, 8))
+            sns.barplot(x=ip_count_per_country.index, y=ip_count_per_country.values)
+            plt.title("Number of IP Ranges per Country")
+            plt.xlabel('Country')
+            plt.ylabel('Number of IP Ranges')
+            plt.xticks(rotation=90)
+            plt.savefig(
+                f'{BASE_DIR}/notebooks/plots/geolocation/barplot_ip_ranges_per_country.png',
+                dpi=300,
+                bbox_inches='tight')
+            plt.show()
+
+            # 2. Choropleth Map: Geographical distribution of IP ranges by country
+            print("Generating Choropleth Map - Geographical Distribution of IP Ranges by Country...")
+            country_ip_data = self.data.groupby('country').size().reset_index(name='ip_range_count')
+            world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+            merged = world.set_index('name').join(country_ip_data.set_index('country'))
+
+            fig, ax = plt.subplots(1, 1, figsize=(15, 10))
+            merged.plot(column='ip_range_count', ax=ax, legend=True,
+                        legend_kwds={'label': "Number of IP Ranges by Country",
+                                    'orientation': "horizontal"})
+            plt.title("Geographical Distribution of IP Ranges by Country")
+            plt.savefig(
+                f'{BASE_DIR}/notebooks/plots/geolocation/choropleth_map_ip_ranges.png',
+                dpi=300,
+                bbox_inches='tight')
+            plt.show()
+
+            # 3. Scatter Plot: Overlap and gaps between IP ranges
+            print("Generating Scatter Plot - Overlap and Gaps Between IP Ranges...")
+            self.data['range_size'] = self.data['upper_bound_ip_address'] - self.data['lower_bound_ip_address']
+            plt.figure(figsize=(12, 8))
+            sns.scatterplot(x=self.data['lower_bound_ip_address'], y=self.data['upper_bound_ip_address'], hue=self.data['country'], palette="Set1", size=self.data['range_size'], sizes=(10, 100))
+            plt.title("Scatter Plot - Overlap and Gaps Between IP Ranges")
+            plt.xlabel('Lower Bound IP Address')
+            plt.ylabel('Upper Bound IP Address')
+            plt.savefig(
+                f'{BASE_DIR}/notebooks/plots/geolocation/scatterplot_ip_ranges_overlap_gaps.png',
+                dpi=300,
+                bbox_inches='tight')
+            plt.show()
+
+        else:
+            print("This method is only applicable for Geolocation data.")
+
 
 
     def ip_to_integer(self, ip):
@@ -351,10 +502,12 @@ class FraudDataProcessor:
 
     def merge_datasets_for_geolocation(self):
         """Merge Fraud_Data.csv with IpAddress_to_Country.csv using IP ranges."""
+        print(f"\n\n{'*'*120}\n")
         if self.transaction_type != 'e-Commerce transaction':
+            print("Merging is not applicable for 'creditcard.csv'. Skipping operation.")
             return
 
-        print(f"{'*'*120}")
+
         print(f"Merging data: ip_address from {self.transaction_type} data with ip address range from IpAddress_to_Country.csv")
         # Convert IP addresses to integer format
         self.data['ip_int'] = self.data['ip_address'].apply(self.ip_to_integer)
@@ -368,7 +521,7 @@ class FraudDataProcessor:
 
         # Load IP-to-country mapping
         ip_to_country = pd.read_csv(
-            f'{BASE_DIR}/data/IpAddress_to_Country.csv')
+            f'{BASE_DIR}/IpAddress_to_Country.csv')
 
         # Convert lower and upper bounds to integer format
         ip_to_country['lower_bound_ip_int'] = ip_to_country['lower_bound_ip_address'].apply(
@@ -410,32 +563,43 @@ class FraudDataProcessor:
     def feature_engineering(self):
         """Create new features like hours_of_day, hours_of_week and calculate transaction frequency and time-based features."""
 
+        print(f"\n\n{'*'*120}\n")
         # Feature engineering is on e-Commerce transaction data the creditcard.csv is already curated.
         if self.transaction_type != 'e-Commerce transaction':
+            print("Feature engineering is already applied for 'creditcard.csv' and note necessary for Gelocation. Skipping operation.")
             return
 
-        print(f"\n\n{'*'*120}\n")
         print(f"Feature engineering on {self.transaction_type} starting...")
 
         self.data['hour_of_day'] = self.data['purchase_time'].dt.hour
         self.data['day_of_week'] = self.data['purchase_time'].dt.dayofweek
 
-        # Ensure timestamps are sorted correctly
-        self.data = self.data.sort_values(by=['user_id', 'purchase_time'])
+        # Ensure 'purchase_time' is in datetime format
+        self.data['purchase_time'] = pd.to_datetime(self.data['purchase_time'])
 
-        # Compute transaction frequency
-        self.data['transaction_frequency'] = self.data.groupby(
-            'user_id')['purchase_time'].diff().dt.total_seconds()
+        # Create transaction date column temporarily
+        self.data['transaction_date'] = self.data['purchase_time'].dt.date
 
-        # Ensure non-negative values
-        self.data['transaction_frequency'] = self.data['transaction_frequency'].apply(
-            lambda x: max(x, 0))
+        # Compute daily transaction amount
+        daily_transaction_amount = self.data.groupby(['user_id', 'transaction_date'])['purchase_value'].sum().reset_index()
+
+        # Merge back with original dataset (avoiding column conflict)
+        self.data = self.data.merge(daily_transaction_amount, on=['user_id', 'transaction_date'], how='left', suffixes=('', '_24h'))
+
+        # Rename the newly created column properly
+        self.data.rename(columns={'purchase_value_24h': 'daily_transaction_amount'}, inplace=True)
+
+        # Drop 'transaction_date' (not needed anymore)
+        self.data.drop(columns=['transaction_date'], inplace=True)
+
+
+
 
         self.data['transaction_velocity'] = (
             self.data['purchase_time'] -
             self.data['signup_time']).dt.total_seconds()
-        self.data['transaction_velocity'] = self.data['transaction_velocity'].apply(
-            lambda x: max(x, 0))
+        # self.data['transaction_velocity'] = self.data['transaction_velocity'].apply(
+        #     lambda x: max(x, 0))
 
         # If the same device_id is used by multiple user_ids, it may indicate
         # fraudulent accounts.
@@ -451,24 +615,38 @@ class FraudDataProcessor:
     def normalize_and_scale(self):
         """Normalize and scale numerical features."""
         print(f"\n\n{'*'*120}\n")
+        if self.transaction_type == 'Geolocation':
+            print("Normalization/Standardization is not applicable for Geolocation data. Skipping...")
+            return
+
         print(f"Normalizing and scaling numerical features on {self.transaction_type}... starting")
-        scaler = MinMaxScaler()
-        scalable_columns = []
+
+        # Initialize scalers
         if self.transaction_type == 'e-Commerce transaction':
+            scaler = MinMaxScaler()  # Use MinMaxScaler for e-commerce data
+            # List of scalable columns for e-Commerce data
             scalable_columns = [
-                'transaction_frequency',
+                'daily_transaction_amount',
                 'transaction_velocity',
                 'purchase_value',
-                'device_shared_count']
-        elif self.transaction_type == 'bank transaction':
-            scalable_columns = ['Amount']
+                'device_shared_count'
+            ]
+            print(f"Scalable columns for {self.transaction_type} data using {scaler}: {scalable_columns}")
+            self.data[scalable_columns] = scaler.fit_transform(self.data[scalable_columns])
+
+        elif self.transaction_type == 'Bank transaction':
+            scaler = StandardScaler()  # Use StandardScaler for bank transaction data
+            # List of all numerical columns (Time, V1 to V28, Amount)
+            scalable_columns = ['Time', 'Amount'] + [f'V{i}' for i in range(1, 29)]  # V1 to V28
+            print(f"Scalable columns for {self.transaction_type} data using {scaler}: {scalable_columns}")
+            self.data[scalable_columns] = scaler.fit_transform(self.data[scalable_columns])
+
         else:
-            print("Unknown data")
+            print("Unknown data type")
             return
-        print(f"Scalable columns for {self.transaction_type} data: {scalable_columns}")
-        self.data[scalable_columns] = scaler.fit_transform(
-            self.data[scalable_columns])
+
         print("Normalization and scaling done.")
+
 
     def encode_categorical_features(self):
         """Encode categorical features:
@@ -476,10 +654,10 @@ class FraudDataProcessor:
         - 'browser', 'source', 'country', 'age_group' using One-Hot Encoding.
         """
         if self.transaction_type != 'e-Commerce transaction':
-            print("Unknown data and no categorical columns for creditcard.csv data")
+            print("Unknown data and no categorical columns to be encoded for creditcard.csv data and geolocation data. Skipping")
             return
 
-        print(f"\n\n{'*'}*120\n")
+        print(f"\n\n{'*'*120}\n")
         print(f"Encoding selected categorical features from {self.transaction_type} starting...")
 
         label_encoder = LabelEncoder()
@@ -498,16 +676,23 @@ class FraudDataProcessor:
         onehot_encoding_columns = [
             col for col in onehot_encoding_columns if col in self.data.columns]
 
+        print(f"Label Encoding column: {label_encoding_column}")
+        print(f"One-Hot Encoding columns: {onehot_encoding_columns}")
+
         # Convert to string to handle missing values and prevent issues
+        print
         self.data[label_encoding_column] = self.data[label_encoding_column].astype(
             str)
         self.data[onehot_encoding_columns] = self.data[onehot_encoding_columns].astype(
             str)
 
+        print(f"Shape of data after converting into strings: {self.data.shape}")
+
         # Apply Label Encoding to 'sex'
         if label_encoding_column in self.data.columns:
             self.data[label_encoding_column] = label_encoder.fit_transform(
                 self.data[label_encoding_column])
+        print(f"Shape of data after label encoding: {self.data.shape}")
 
         # Apply One-Hot Encoding to the remaining categorical features
         if onehot_encoding_columns:
@@ -521,38 +706,49 @@ class FraudDataProcessor:
                         onehot_encoding_columns,
                         onehot_encoder.categories_) for category in categories]
             )
+        print(f"Shape of data after one-hot encoding: {encoded_df.shape}")
 
-            # Drop original categorical columns and merge one-hot encoded data
-            self.data = self.data.drop(columns=onehot_encoding_columns)
-            self.data = pd.concat([self.data, encoded_df], axis=1)
+        # Drop original categorical columns and merge one-hot encoded data
+        self.data = self.data.drop(columns=onehot_encoding_columns)
+        self.data = pd.concat([self.data, encoded_df], axis=1)
+        print(f"Shape of data after droping original categ and merging columns: {self.data.shape}")
 
         # Drop any unwanted "_nan" columns and remove NaNs
         self.data = self.data.drop(
             columns=[
                 col for col in self.data.columns if "_nan" in col],
             errors="ignore")
+        print(f"Shape of data after droping unwanted columns: {self.data.shape}")
+
         self.data = self.data.dropna()
+        print(f"Shape of data after dropping NaNs -that is final: {self.data.shape}")
+
 
         print("Categorical encoding completed.")
 
+
+
     def save_processed_data(
             self,
-            output_path=f'{BASE_DIR}/data/processed_data.csv'):
+            output_path=f'{BASE_DIR}/processed_data.csv'):
 
         print(f"\n\n{'*'*120}\n")
-        if self.transaction_type == 'bank transaction':
-            print("All creditcard.csv is already curated. No dropping of columns.")
+        print(f"Shape of data before saving: {self.data.shape}")
+        print(f"Saving processed data to {output_path}...")
+        if self.transaction_type == 'Bank transaction' or self.transaction_type == 'Geolocation':
+            print("All creditcard.csv is already curated. No dropping of columns. And for geolocation data too. Skipping...")
         elif self.transaction_type == 'e-Commerce transaction':
 
             # Ensure unnecessary columns are droppped
-            excluded_columns = ['user_id', 'age', 'device_id', 'signup_time', 'purchase_time', 'ip_address', 'ip_int',
+            excluded_columns = ['user_id', 'age', 'device_id', 'signup_time', 'purchase_time', 'purchase_value', 'ip_address', 'ip_int',
                                 'lower_bound_ip_address', 'upper_bound_ip_address',
                                 'lower_bound_ip_int', 'upper_bound_ip_int']
+
+            self.data = self.data.drop(columns=excluded_columns, errors='ignore')
 
         else:
             print("Unknown data")
 
-        self.data = self.data.drop(columns=excluded_columns, errors='ignore')
         """Save the processed data to a CSV file."""
         self.data.to_csv(output_path, index=False)
         print(f"Processed data saved to {output_path}")
@@ -569,9 +765,10 @@ class FraudDataProcessor:
         self.correct_data_types()
 
         # Exploratory Data Analysis/ Visualizations
-        self.univariate_analysis()
-        self.bivariate_analysis()
-        self.bivariate_categorical_analysis()
+        # self.univariate_analysis()
+        # self.bivariate_analysis()
+        # self.bivariate_categorical_analysis()
+        self.geolocation_summary_plots()
 
         self.merge_datasets_for_geolocation()
         self.feature_engineering()
