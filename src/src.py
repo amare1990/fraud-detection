@@ -27,8 +27,6 @@ if __name__ == '__main__':
     fraud_detector = FraudDataProcessor()
     fraud_detector.analysis_preprocess()
 
-    # Run all model building, training and evaluation processes automatically.
-
     # Pipelining all model building, training and evaluation processes.
     # Run the pipleiner
     pipeline_model_training_processes()

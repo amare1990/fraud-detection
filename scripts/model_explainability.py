@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
 
 
 class ModelExplainability:
@@ -29,7 +30,7 @@ class ModelExplainability:
         self.X_train = X_train
         self.X_test = X_test
         self.feature_names = feature_names
-        self.base_dir = base_dir  # Added base directory as a parameter
+        self.base_dir = base_dir
 
         # Initialize SHAP Explainer
         if isinstance(self.model, (RandomForestClassifier, DecisionTreeClassifier, GradientBoostingClassifier)):

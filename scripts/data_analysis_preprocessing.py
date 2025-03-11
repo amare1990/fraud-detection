@@ -536,7 +536,7 @@ class FraudDataProcessor:
 
         # Load IP-to-country mapping
         ip_to_country = pd.read_csv(
-            f'{BASE_DIR}/IpAddress_to_Country.csv')
+            f'{BASE_DIR}/data/IpAddress_to_Country.csv')
 
         # Convert lower and upper bounds to integer format
         ip_to_country['lower_bound_ip_int'] = ip_to_country['lower_bound_ip_address'].apply(

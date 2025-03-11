@@ -1,4 +1,7 @@
-"""Pipelining model explainability"""
+"""
+Pipelining model explainability.
+Try Decision Tree as others take too long time to run.
+"""
 
 import pickle
 import pandas as pd
@@ -17,6 +20,7 @@ def pipeline_model_explainability():
     """A method to pipleine all processes in model explanability."""
 
     # Define models to load
+    # Change the base directory to your preferred to one.
     base_dir_models = "/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/models"
     model_paths = {
         "Logistic Regression": f"{base_dir_models}/Logistic Regression.pkl",
@@ -34,13 +38,6 @@ def pipeline_model_explainability():
         "/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection/data/processed_data.csv")
     target_column = "class"
 
-    # Drop unwanted columns
-    excluded_columns = [
-        'device_id', 'signup_time', 'purchase_time', 'ip_int',
-        'lower_bound_ip_address', 'upper_bound_ip_address',
-        'lower_bound_ip_int', 'upper_bound_ip_int'
-    ]
-    df = df.drop(columns=excluded_columns, errors='ignore')
 
     # Prepare training and testing data
     X = df.drop(columns=[target_column])

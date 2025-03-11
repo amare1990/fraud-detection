@@ -1,7 +1,7 @@
 """ Build, train, and evaluation."""
 
-import pickle
 import random
+import pickle
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -17,12 +17,13 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 import mlflow
 import mlflow.sklearn
 import mlflow.pytorch
-
+from mlflow.models import ModelSignature
+from mlflow.types.schema import Schema, TensorSpec
 
 from scripts.smotified_gan_balancer import SMOTifiedGANBalancer
-from scripts.cnn import CNNModel
 from scripts.rnn import RNNModel
 from scripts.lstm import LSTMModel
+from scripts.cnn import CNNModel
 
 # Set random seed for reproducibility
 def set_seed(seed_value=42):
@@ -44,19 +45,40 @@ def set_seed(seed_value=42):
 set_seed(42)
 
 
+
 BASE_DIR = "/home/am/Documents/Software Development/10_Academy Training/week_8-9/fraud-detection"
 
-
 class FraudDetectionModel:
+    """
+    Params: data-processed data, target_column- target column name
+    """
     def __init__(self, data, target_column):
-        self.data = data
+        """
+        Params: data-final balanced data to be saved,
+        processed_data_path- path of processed data to get the test data
+        target_column- target column name-class(0 or 1)
+        """
         self.target_column = target_column
         self.balancer = SMOTifiedGANBalancer()
         self.models = {}
         self.X_train = None
-        self.X_test = None
         self.y_train = None
-        self.y_test = None
+
+        # self.processed_data will not be processed further. Only used for extracting test data
+        self.processed_data = data
+        self.X_test, self.y_test = self.get_X_test_original_data()
+
+        # This data will be processed further and finally will contain balanced data
+        self.data = data
+
+    def get_X_test_original_data(self, test_size=0.2):
+        X = self.processed_data.drop(columns=[self.target_column])
+        y = self.processed_data[self.target_column].values
+        _, X_test, _, y_test = train_test_split(
+            X, y, test_size=test_size, random_state=42, stratify=y
+        )
+        print(f"Original test data shape: {X_test.shape}, {y_test.shape}")
+        return X_test, y_test
 
     def balance_data(self, target_col='class'):
         print(f"\n\n{'*'*100}\n")
@@ -65,11 +87,6 @@ class FraudDetectionModel:
         # Features (X) and target (y) - drop the target column from X
         X = self.data.drop(columns=[target_col]).values
         y = self.data[target_col].values
-
-        # Split the data into training (balanced) and test (imbalanced) sets
-        _, X_test, _, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=y
-        )
 
         # Apply SMOTified+GAN for balancing the dataset
         X_balanced, y_balanced = self.balancer.balance_data(X, y)
@@ -84,12 +101,8 @@ class FraudDetectionModel:
         print(f"Balanced and Processed data saved to {output_path}")
         print("Data Balancing Completed Successfully.")
 
-        # Store the test data (imbalanced) for later evaluation
-        self.X_test = X_test
-        self.y_test = y_test
-
     def data_preparation(self, test_size=0.2):
-        print(f"\n\n{'*'*100}\n")
+        print(f"\n\n{'*'*120}\n")
         print("Data preparation starting...")
 
         # Prepare the features and target
@@ -100,7 +113,9 @@ class FraudDetectionModel:
         self.X_train, _, self.y_train, _ = train_test_split(
             X, y, test_size=test_size, random_state=42, stratify=y
         )
+        print(f"Training data shape: {self.X_train.shape}, {self.y_train.shape}")
         print("Data prepared: Train and test sets created.")
+
 
     def train_sklearn_models(self):
         models = {
@@ -116,32 +131,34 @@ class FraudDetectionModel:
             model.fit(self.X_train, self.y_train)
             self.models[name] = model
 
-    def train_deep_learning_models(
-            self, model_type="LSTM", epochs=10, batch_size=32, learning_rate=0.001):
+    def train_deep_learning_models(self, model_type="LSTM", epochs=10, batch_size=32, learning_rate=0.001):
         # Convert X_train and X_test to NumPy arrays before creating tensors
-        X_train_np = self.X_train.values  # Convert DataFrame to NumPy array
-        X_test_np = self.X_test.values    # Convert DataFrame to NumPy array
+        if self.X_train is None or self.X_test is None:
+            print("Data has not been prepared. Please call data_preparation() first.")
+            return
 
-        X_train_tensor = torch.tensor(
-            X_train_np, dtype=torch.float32).unsqueeze(1)
-        X_test_tensor = torch.tensor(
-            X_test_np, dtype=torch.float32).unsqueeze(1)
-        y_train_tensor = torch.tensor(
-            self.y_train, dtype=torch.float32).unsqueeze(1)
-        y_test_tensor = torch.tensor(
-            self.y_test, dtype=torch.float32).unsqueeze(1)
+        # Convert X_train and X_test to NumPy arrays if they are DataFrames
+        # If they are already NumPy arrays, this step is skipped.
+        if isinstance(self.X_train, pd.DataFrame):
+            X_train_np = self.X_train.values
+        else:
+            X_train_np = self.X_train  # Use existing NumPy array
+
+        if isinstance(self.X_test, pd.DataFrame):
+            X_test_np = self.X_test.values
+        else:
+            X_test_np = self.X_test  # Use existing NumPy array
+
+        X_train_tensor = torch.tensor(X_train_np, dtype=torch.float32).unsqueeze(1)
+        X_test_tensor = torch.tensor(X_test_np , dtype=torch.float32).unsqueeze(1)
+        y_train_tensor = torch.tensor(self.y_train, dtype=torch.float32).unsqueeze(1)
+        y_test_tensor = torch.tensor(self.y_test, dtype=torch.float32).unsqueeze(1)
 
         train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
         test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
 
-        train_loader = DataLoader(
-            train_dataset,
-            batch_size=batch_size,
-            shuffle=True)
-        test_loader = DataLoader(
-            test_dataset,
-            batch_size=batch_size,
-            shuffle=True)
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
         input_size = self.X_train.shape[1]
         model = self._initialize_model(model_type, input_size)
@@ -179,15 +196,7 @@ class FraudDetectionModel:
 
     def _plot_loss_curve(self, losses, model_type, epochs):
         plt.figure(figsize=(8, 6))
-        plt.plot(
-            range(
-                1,
-                epochs + 1),
-            losses,
-            marker='o',
-            linestyle='-',
-            color='b',
-            label=f'{model_type} Loss')
+        plt.plot(range(1, epochs + 1), losses, marker='o', linestyle='-', color='b', label=f'{model_type} Loss')
         plt.xlabel("Epochs")
         plt.ylabel("Loss")
         plt.title(f"{model_type} Training Loss Curve")
@@ -233,9 +242,7 @@ class FraudDetectionModel:
                 'accuracy': accuracy,
                 'precision': precision,
                 'recall': recall,
-                'f1_score': f1,
-                'conf_matrix': conf_matrix,
-                'class_report': class_report
+                'f1_score': f1
             }
 
             # Log experiment with MLflow
@@ -270,7 +277,13 @@ class FraudDetectionModel:
         """
         Generate a radar chart to compare model performances.
         """
-        labels = list(model_metrics[next(iter(model_metrics))].keys())
+        print(f"\n\n{'*'*120}\n")
+        print("Generating radar chart...")
+        if not model_metrics:
+            print("Error: model_metrics is empty. No data to plot.")
+            return
+
+        labels = list(next(iter(model_metrics.values())).keys())
         num_vars = len(labels)
 
         angles = [n / float(num_vars) * 2 * np.pi for n in range(num_vars)]
@@ -281,56 +294,73 @@ class FraudDetectionModel:
 
         for model_name, metrics in model_metrics.items():
             values = list(metrics.values())
-            values += values[:1]
+            values += values[:1]  # Complete the loop
             ax.plot(angles, values, label=model_name, linewidth=2)
             ax.fill(angles, values, alpha=0.1)
 
         ax.set_xticks(angles[:-1])
         ax.set_xticklabels(labels)
         plt.title(f'Model Comparison')
+        print("\n\n")
         plt.legend(loc='upper right', bbox_to_anchor=(1.2, 1.1))
-        plt.savefig(
-            f"{BASE_DIR}/notebooks/plots/models/radar_chart.png"
-        )
+        plt.savefig(f"{BASE_DIR}/notebooks/plots/models/radar_chart.png")
         plt.show()
 
+
+
     def save_model(self, model_name):
+        print(f"\n\n{'*'*120}")
+        print(f"Saving {model_name} model...")
         model = self.models.get(model_name)
         if not model:
             print(f'Model {model_name} not found!')
             return
 
         if model_name in ['CNN', 'RNN', 'LSTM']:
-            torch.save(
-                model.state_dict(),
-                f"{BASE_DIR}/models/{model_name}.pth")
+            # Define the model signature instead of input_example
+            input_schema = Schema([TensorSpec(np.dtype(np.float32), shape=(-1, *self.X_test.shape[1:]))])
+            output_schema = Schema([TensorSpec(np.dtype(np.float32), shape=(-1,))])
+            signature = ModelSignature(inputs=input_schema, outputs=output_schema)
+
+            # Log model with signature instead of input_example
+            mlflow.pytorch.log_model(model, model_name, signature=signature)
+
+            # Just saving with .path file extension
+            torch.save(model.state_dict(), f"{BASE_DIR}/models/{model_name}.pth")
+
         else:
-            # Open the file in write binary mode ('wb')
-            with open(f"{BASE_DIR}/models/{model_name}.pkl", 'wb') as f:
+            # Save the model as a pickle file
+            model_path = f"{BASE_DIR}/models/{model_name}.pkl"
+            with open(model_path, 'wb') as f:
                 pickle.dump(model, f)
 
-        print(f'Model {model_name} saved successfuly!')
+        print(f'Model {model_name} saved successfully!')
+
 
     def track_versioning_experiment(self, model_name, accuracy, params=None):
-        # Set the experiment (ideally should be done once, not every run)
+        print(f"\n\n{'*'*120}")
+        print(f"Tracking {model_name} model")
+
+        # Ensure no active runs before starting a new one
+        if mlflow.active_run():
+            mlflow.end_run()
+
+        # Set the experiment
         mlflow.set_experiment("Fraud Detection")
 
-        with mlflow.start_run():
-            # Log model name as a parameter
-            mlflow.log_param("Model", model_name)
-            # Log accuracy as a metric
-            mlflow.log_metric("Accuracy", accuracy)
+        with mlflow.start_run(run_name=model_name):
+            mlflow.log_metric("accuracy", accuracy)  # Log accuracy using MLflow
 
-            # Log hyperparameters if provided
-            if params:
-                for key, value in params.items():
-                    mlflow.log_param(key, value)
-
-            # Log model based on type (CNN or LSTM for PyTorch; else for
-            # scikit-learn)
             if model_name in ['CNN', 'RNN', 'LSTM']:
-                mlflow.pytorch.log_model(self.models[model_name], model_name)
-            else:
-                mlflow.sklearn.log_model(self.models[model_name], model_name)
+                # Define input schema instead of input_example
+                input_schema = Schema([TensorSpec(np.dtype(np.float32), shape=(-1, *self.X_test.shape[1:]))])
+                output_schema = Schema([TensorSpec(np.dtype(np.float32), shape=(-1,))])
+                signature = ModelSignature(inputs=input_schema, outputs=output_schema)
 
-            print(f"Experiment tracked for {model_name}")
+                # Log the model
+                mlflow.pytorch.log_model(self.models[model_name], model_name, signature=signature)
+
+            else:
+                mlflow.sklearn.log_model(self.models[model_name], model_name, input_example=self.X_test[:1])
+
+        print(f"Experiment tracked for {model_name}")
