@@ -524,7 +524,7 @@ The next steps involve building an end-to-end fraud detection pipeline:
 ---
 
 ### More information
-- You can refer to [this link](https://drive.google.com/file/d/1aZKOSMJHP8vytMt3DrpnHAZAGm5A15Xp/view) to gain more insights about the reports of this project results.
+- You can refer to [this link](https://drive.google.com/file/d/1chSnUKK2i5vZdZg_6l9yq_RNwubdHqtz/view?usp=sharing) to gain more insights about the reports of this project results.
 ---
 
 ## Authors
