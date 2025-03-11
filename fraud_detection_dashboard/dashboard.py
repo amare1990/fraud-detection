@@ -1,8 +1,6 @@
 """Script to visualize fraud trends using Dash. """
 
-
 import dash
-
 from dash import dcc, html
 import requests
 import pandas as pd
@@ -10,9 +8,7 @@ import plotly.express as px
 
 
 # Initialize Dash APP
-
 app = dash.Dash(__name__)
-
 
 # Fetch data from the local server
 summary_data = requests.get("http://127.0.0.1:5000/summary").json()

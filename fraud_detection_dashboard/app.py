@@ -1,4 +1,6 @@
-"""Flask backend to serve fraud detection data through API endpoints."""
+"""
+Flask backend to serve fraud detection data through API endpoints.
+"""
 
 from flask import Flask, jsonify
 import pandas as pd
@@ -30,12 +32,11 @@ def home():
 
 
 @app.route("/summary", methods=["GET"])
-
 def summary():
   total_transaction = len(df)
   total_fraud_cases = df[df["class"] == 1].shape[0]
   fraud_percentage = (total_fraud_cases / total_transaction) * 100
-  total_features = list(df.columns)
+  total_features = len(list(df.columns))
 
   summary_data = {
       "total_transactions": total_transaction,
