@@ -25,9 +25,9 @@ class FraudDataProcessor:
         Initialize the class with the dataset.
         :param data_path: Path to the dataset CSV file.
         """
-        # Set default path if None is provided
+        # Set default path if None is provided. Only just give 'Fraud_Data.csv'
         if data_path is None:
-            data_path = f'{BASE_DIR}/Fraud_Data.csv'
+            data_path = f'{BASE_DIR}/data/Fraud_Data.csv'
 
         self.data_path = data_path
 
@@ -421,7 +421,7 @@ class FraudDataProcessor:
                 print("The variables are likely dependent.")
             else:
                 print("The variables are likely independent.")
-        elif self.transaction_type == 'Bank transaction':
+        elif self.transaction_type == 'Bank transaction' or self.transaction_type == 'Geolocation':
             print(f"Bivariante analysis for {self.transaction_type} data is not applicabel-No categorical data")
         else:
             print("Unknown data")
@@ -444,7 +444,7 @@ class FraudDataProcessor:
             plt.title("Number of IP Ranges per Country")
             plt.xlabel('Country')
             plt.ylabel('Number of IP Ranges')
-            plt.xticks(rotation=90)
+            plt.xticks(rotation=45)
             plt.savefig(
                 f'{BASE_DIR}/notebooks/plots/geolocation/barplot_ip_ranges_per_country.png',
                 dpi=300,
@@ -454,8 +454,19 @@ class FraudDataProcessor:
             # 2. Choropleth Map: Geographical distribution of IP ranges by country
             print("Generating Choropleth Map - Geographical Distribution of IP Ranges by Country...")
             country_ip_data = self.data.groupby('country').size().reset_index(name='ip_range_count')
-            world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
-            merged = world.set_index('name').join(country_ip_data.set_index('country'))
+
+            # Load world map data
+            url = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson"
+            world = gpd.read_file(url)
+
+            # Debugging: Check column names
+            print("GeoDataFrame columns:", world.columns)
+
+            # Use the correct column for country names (typically 'ADMIN')
+            world = world.rename(columns={'ADMIN': 'country'})
+
+            # Merge data
+            merged = world.set_index('country').join(country_ip_data.set_index('country'))
 
             fig, ax = plt.subplots(1, 1, figsize=(15, 10))
             merged.plot(column='ip_range_count', ax=ax, legend=True,
@@ -472,7 +483,8 @@ class FraudDataProcessor:
             print("Generating Scatter Plot - Overlap and Gaps Between IP Ranges...")
             self.data['range_size'] = self.data['upper_bound_ip_address'] - self.data['lower_bound_ip_address']
             plt.figure(figsize=(12, 8))
-            sns.scatterplot(x=self.data['lower_bound_ip_address'], y=self.data['upper_bound_ip_address'], hue=self.data['country'], palette="Set1", size=self.data['range_size'], sizes=(10, 100))
+            sns.scatterplot(x=self.data['lower_bound_ip_address'], y=self.data['upper_bound_ip_address'],
+                            hue=self.data['country'], palette="Set1", size=self.data['range_size'], sizes=(10, 100))
             plt.title("Scatter Plot - Overlap and Gaps Between IP Ranges")
             plt.xlabel('Lower Bound IP Address')
             plt.ylabel('Upper Bound IP Address')
@@ -481,6 +493,9 @@ class FraudDataProcessor:
                 dpi=300,
                 bbox_inches='tight')
             plt.show()
+
+            # **Drop 'range_size' after visualization**
+            self.data.drop(columns=['range_size'], inplace=True)
 
         else:
             print("This method is only applicable for Geolocation data.")
@@ -504,7 +519,7 @@ class FraudDataProcessor:
         """Merge Fraud_Data.csv with IpAddress_to_Country.csv using IP ranges."""
         print(f"\n\n{'*'*120}\n")
         if self.transaction_type != 'e-Commerce transaction':
-            print("Merging is not applicable for 'creditcard.csv'. Skipping operation.")
+            print("Merging is not applicable for this data. Skipping operation.")
             return
 
 
@@ -566,7 +581,7 @@ class FraudDataProcessor:
         print(f"\n\n{'*'*120}\n")
         # Feature engineering is on e-Commerce transaction data the creditcard.csv is already curated.
         if self.transaction_type != 'e-Commerce transaction':
-            print("Feature engineering is already applied for 'creditcard.csv' and note necessary for Gelocation. Skipping operation.")
+            print("Feature engineering is already applied for 'creditcard.csv' or notnecessary for 'IpAddress_to_Country' data. Skipping operation.")
             return
 
         print(f"Feature engineering on {self.transaction_type} starting...")
@@ -615,8 +630,9 @@ class FraudDataProcessor:
     def normalize_and_scale(self):
         """Normalize and scale numerical features."""
         print(f"\n\n{'*'*120}\n")
+
         if self.transaction_type == 'Geolocation':
-            print("Normalization/Standardization is not applicable for Geolocation data. Skipping...")
+            print("Normalization and scaling is not applicable for Geolocation data.")
             return
 
         print(f"Normalizing and scaling numerical features on {self.transaction_type}... starting")
@@ -628,7 +644,6 @@ class FraudDataProcessor:
             scalable_columns = [
                 'daily_transaction_amount',
                 'transaction_velocity',
-                'purchase_value',
                 'device_shared_count'
             ]
             print(f"Scalable columns for {self.transaction_type} data using {scaler}: {scalable_columns}")
@@ -653,11 +668,12 @@ class FraudDataProcessor:
         - 'sex' using Label Encoding.
         - 'browser', 'source', 'country', 'age_group' using One-Hot Encoding.
         """
+        print(f"\n\n{'*'*120}\n")
+
         if self.transaction_type != 'e-Commerce transaction':
-            print("Unknown data and no categorical columns to be encoded for creditcard.csv data and geolocation data. Skipping")
+            print("No categorical columns to be encoded.")
             return
 
-        print(f"\n\n{'*'*120}\n")
         print(f"Encoding selected categorical features from {self.transaction_type} starting...")
 
         label_encoder = LabelEncoder()
@@ -730,13 +746,21 @@ class FraudDataProcessor:
 
     def save_processed_data(
             self,
-            output_path=f'{BASE_DIR}/processed_data.csv'):
+            output_path=None):
+
+        """Save processed data to a CSV file."""
+
+        # Ensure output_path is dynamically set after object creation
+        if output_path is None:
+            output_path = f"{BASE_DIR}/data/processed_data_{self.transaction_type}.csv"
 
         print(f"\n\n{'*'*120}\n")
         print(f"Shape of data before saving: {self.data.shape}")
         print(f"Saving processed data to {output_path}...")
-        if self.transaction_type == 'Bank transaction' or self.transaction_type == 'Geolocation':
-            print("All creditcard.csv is already curated. No dropping of columns. And for geolocation data too. Skipping...")
+        if self.transaction_type == 'Bank transaction':
+            print("All creditcard.csv is already curated. No dropping of columns.")
+        elif self.transaction_type == 'Geolocation':
+            print("Droping of features is not necessary.")
         elif self.transaction_type == 'e-Commerce transaction':
 
             # Ensure unnecessary columns are droppped
@@ -765,9 +789,9 @@ class FraudDataProcessor:
         self.correct_data_types()
 
         # Exploratory Data Analysis/ Visualizations
-        # self.univariate_analysis()
-        # self.bivariate_analysis()
-        # self.bivariate_categorical_analysis()
+        self.univariate_analysis()
+        self.bivariate_analysis()
+        self.bivariate_categorical_analysis()
         self.geolocation_summary_plots()
 
         self.merge_datasets_for_geolocation()
